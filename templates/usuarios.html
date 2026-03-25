@@ -1,0 +1,67 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="card">
+    <h2>{{ 'Editar' if edit_item else 'Registrar Nuevo' }} Usuario</h2>
+    <form method="POST" action="{{ url_for('usuarios', id=edit_item.id if edit_item else None) }}">
+        <div class="grid-2">
+            <div class="form-group">
+                <label>Nombre Completo</label>
+                <input type="text" name="nombre" required value="{{ edit_item.nombre if edit_item else '' }}">
+            </div>
+            <div class="form-group">
+                <label>Teléfono</label>
+                <input type="text" name="telefono" required value="{{ edit_item.telefono if edit_item else '' }}">
+            </div>
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" name="email" required value="{{ edit_item.email if edit_item else '' }}">
+            </div>
+            <div class="form-group">
+                <label>Rol</label>
+                <select name="rol" required>
+                    <option value="Administrador" {% if edit_item and edit_item.rol == 'Administrador' %}selected{% endif %}>Administrador</option>
+                    <option value="Ventas" {% if edit_item and edit_item.rol == 'Ventas' %}selected{% endif %}>Ventas</option>
+                    <option value="Inventario" {% if edit_item and edit_item.rol == 'Inventario' %}selected{% endif %}>Inventario</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Contraseña {% if edit_item %}(Dejar en blanco para no cambiar){% endif %}</label>
+                <input type="password" name="password" placeholder="••••••••" {% if not edit_item %}required{% endif %}>
+            </div>
+        </div>
+        <button type="submit" class="btn">{{ 'Actualizar' if edit_item else 'Guardar Nuevo' }} Usuario</button>
+        {% if edit_item %}
+        <a href="{{ url_for('usuarios') }}" class="btn" style="background-color: gray;">Cancelar Edición</a>
+        {% endif %}
+    </form>
+</div>
+
+<div class="card">
+    <h2>Listado de Usuarios</h2>
+    <table>
+        <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Teléfono</th>
+            <th>Email</th>
+            <th>Rol</th>
+            <th>Acciones</th>
+        </tr>
+        {% for u in items %}
+        <tr>
+            <td>{{ u.id }}</td>
+            <td><strong>{{ u.nombre }}</strong></td>
+            <td>{{ u.telefono }}</td>
+            <td>{{ u.email }}</td>
+            <td><span class="badge">{{ u.rol }}</span></td>
+            <td>
+                <a href="{{ url_for('usuarios', id=u.id) }}" class="btn">Editar</a>
+                <a href="{{ url_for('delete_usuario', id=u.id) }}" class="btn btn-danger" onclick="return confirm('¿Eliminar usuario del sistema?')">Eliminar</a>
+            </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="6">No hay usuarios registrados</td></tr>
+        {% endfor %}
+    </table>
+</div>
+{% endblock %}

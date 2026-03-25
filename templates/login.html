@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IVVI Login</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: var(--fondo-gris, #f4f7f6);
+            margin: 0;
+        }
+        .login-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-card card">
+        <div style="text-align: center; margin-bottom: 1rem;">
+            <img src="{{ url_for('static', filename='logo.png') }}" alt="IVVI S.A. Productos de Calidad" style="max-height: 85px; object-fit: contain;">
+        </div>
+        <h2 style="text-align: center; color: var(--primary-dark);">Acceso al Sistema</h2>
+        <p style="text-align: center; color: var(--text-muted); margin-bottom: 1.5rem;">Credenciales requeridas</p>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}" style="margin-bottom: 1rem;">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <form method="POST" action="{{ url_for('auth.login') }}">
+            <div class="form-group">
+                <label>Correo Electrónico</label>
+                <input type="email" name="email" required placeholder="admin@ivvi.com">
+            </div>
+            <div class="form-group" style="margin-top: 1rem;">
+                <label>Contraseña</label>
+                <input type="password" name="password" required placeholder="••••••••">
+            </div>
+            <button type="submit" class="btn" style="width: 100%; margin-top: 1.5rem;">Iniciar Sesión</button>
+        </form>
+    </div>
+</body>
+</html>

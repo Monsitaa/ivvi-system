@@ -1,0 +1,43 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="card" style="border-top: 5px solid var(--verde-fuerte);">
+    <h2 style="color: var(--verde-fuerte)">Registrar Compra a Proveedor (Ingresa al Inventario)</h2>
+    <form method="POST" action="{{ url_for('compras') }}">
+        <div class="grid-2">
+            <div class="form-group">
+                <label>Producto Adquirido</label>
+                <select name="producto_id" required>
+                    <option value="">-- Seleccionar Producto --</option>
+                    {% for p in productos %}
+                    <option value="{{ p.id }}">{{ p.nombre }} (Stock actual: {{ p.stock }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Cantidad Comprada (Nuevas Unidades)</label>
+                <input type="number" min="1" name="cantidad" required placeholder="Ej: 100">
+            </div>
+        </div>
+        <button type="submit" class="btn">Registrar Ingreso de Mercancía</button>
+        <p style="margin-top: 10px; font-size: 0.9rem; color: #555;"><i>Nota: La compra incrementará automáticamente el stock físico en el inventario de la empresa.</i></p>
+    </form>
+</div>
+
+<div class="card">
+    <h2>Historial de Compras Inbound (Abastecimiento)</h2>
+    <table>
+        <tr><th>ID Compra</th><th>Fecha de Operación</th><th>Producto Adquirido</th><th>Cantidad Ingresada</th><th>Acciones</th></tr>
+        {% for c in items %}
+        <tr>
+            <td>#{{ c.id }}</td>
+            <td>{{ c.fecha }}</td>
+            <td><strong>{{ get_prod(c.producto_id).nombre }}</strong></td>
+            <td><strong style="color:var(--verde-fuerte)">+{{ c.cantidad }} (Entrada)</strong></td>
+            <td>
+                <a href="{{ url_for('delete_compra', id=c.id) }}" class="btn btn-danger" onclick="return confirm('¿Desea eliminar el registro de esta compra? El stock ingresado se descontará del inventario.')">Anular Compra</a>
+            </td>
+        </tr>
+        {% else %}<tr><td colspan="5">No se han registrado operaciones de compra al proveedor.</td></tr>{% endfor %}
+    </table>
+</div>
+{% endblock %}

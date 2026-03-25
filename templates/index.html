@@ -1,0 +1,26 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="card">
+    <h2 style="margin-bottom: 0.5rem; font-size: 2rem;">Panel de Control</h2>
+    <p style="color: var(--text-muted); margin-bottom: 2rem; font-size: 1.1rem;">Hola, <strong>{{ current_user.nombre if current_user else 'Usuario' }}</strong>. Bienvenido al Sistema de Gestión IVVI. Aquí tienes un resumen actual.</p>
+    
+    <div class="grid-4">
+        <div class="stat-card bg-p1">
+            <h3>Productos Activos</h3>
+            <p>{{ p_count }}</p>
+        </div>
+        <div class="stat-card bg-p2">
+            <h3>Ventas Realizadas</h3>
+            <p>{{ v_count }}</p>
+        </div>
+        <div class="stat-card bg-p3">
+            <h3>Compras Registradas</h3>
+            <p>{{ c_count }}</p>
+        </div>
+        <div class="stat-card bg-p4">
+            <h3>Total Usuarios</h3>
+            <p>{{ u_count }}</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

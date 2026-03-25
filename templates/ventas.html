@@ -1,0 +1,53 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="card" style="border-top: 5px solid var(--naranja);">
+    <h2 style="color: var(--naranja)">Registrar Nueva Venta (Afecta Inventario)</h2>
+    <form method="POST" action="{{ url_for('ventas') }}">
+        <div class="grid-2">
+            <div class="form-group">
+                <label>Producto a Vender</label>
+                <select name="producto_id" required>
+                    <option value="">-- Seleccionar Producto --</option>
+                    {% for p in productos %}
+                    <option value="{{ p.id }}">{{ p.nombre }} - [Disp: {{ p.stock }} unidades] - ${{ "%.2f"|format(p.precio) }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Cliente (Comprador)</label>
+                <select name="cliente_id" required>
+                    <option value="">-- Seleccionar Cliente --</option>
+                    {% for c in clientes %}
+                    <option value="{{ c.id }}">{{ c.nombre }} - {{ c.direccion }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Cantidad a Vender (Unidades)</label>
+                <input type="number" min="1" name="cantidad" required placeholder="Ej: 5">
+            </div>
+        </div>
+        <button type="submit" class="btn btn-important">Registrar Transacción</button>
+        <p style="margin-top: 10px; font-size: 0.9rem; color: #555;"><i>Nota: La venta descontará automáticamente el stock del inventario. Se validará que haya existencias suficientes.</i></p>
+    </form>
+</div>
+
+<div class="card">
+    <h2>Historial de Ventas Outbound</h2>
+    <table>
+        <tr><th>ID Venta</th><th>Fecha de Operación</th><th>Producto Vendido</th><th>Cliente Destino</th><th>Cantidad</th><th>Acciones</th></tr>
+        {% for v in items %}
+        <tr>
+            <td>#{{ v.id }}</td>
+            <td>{{ v.fecha }}</td>
+            <td><strong>{{ get_prod(v.producto_id).nombre }}</strong></td>
+            <td>{{ get_cli(v.cliente_id).nombre }}</td>
+            <td><strong style="color:var(--naranja)">-{{ v.cantidad }} (Salida)</strong></td>
+            <td>
+                <a href="{{ url_for('delete_venta', id=v.id) }}" class="btn btn-danger" onclick="return confirm('¿Realmente desea anular esta venta? El stock de los productos vendidos regresará al inventario automáticamente.')">Anular Venta</a>
+            </td>
+        </tr>
+        {% else %}<tr><td colspan="6">No se han registrado ventas hasta el momento.</td></tr>{% endfor %}
+    </table>
+</div>
+{% endblock %}
