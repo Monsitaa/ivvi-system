@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Gestión de Empleados{% endblock %}
+{% block content %}
+<div class="card" style="max-width: 600px; margin-bottom: 2rem;">
+    <h3>Registro de Nuevo Empleado</h3>
+    <form action="{{ url_for('empleados') }}" method="POST">
+        <div class="form-group">
+            <label>Nombre Completo</label>
+            <input type="text" name="nombre" required>
+        </div>
+        <div class="form-group">
+            <label>Cargo</label>
+            <input type="text" name="cargo" required placeholder="Operario de Almacén">
+        </div>
+        <div class="form-group">
+            <label>Teléfono</label>
+            <input type="text" name="telefono" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Registrar</button>
+    </form>
+</div>
+<div class="card">
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Cargo</th>
+                    <th>Teléfono</th>
+                    <th>Estado</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                <tr>
+                    <td style="font-weight: 600;">{{ item.nombre }}</td>
+                    <td>{{ item.cargo }}</td>
+                    <td>{{ item.telefono }}</td>
+                    <td><span class="user-badge" style="background-color: var(--verde-claro);">{{ item.estado }}</span></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,50 +1,107 @@
-{% extends "layout.html" %}
+{% extends "base.html" %}
+
+{% block title %}Catálogo de Productos{% endblock %}
+
 {% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+    <h2>Listado de Productos</h2>
+    <a href="#form-card" class="btn btn-primary"><i class="fas fa-plus"></i> Nuevo Producto</a>
+</div>
+
 <div class="card">
-    <h2>{{ 'Editar Producto' if edit_item else 'Registrar Nuevo Producto en Inventario' }}</h2>
-    <form method="POST" action="{{ url_for('productos', id=edit_item.id if edit_item else None) }}">
-        <div class="grid-2">
-            <div class="form-group"><label>Nombre del Producto</label><input type="text" name="nombre" required value="{{ edit_item.nombre if edit_item else '' }}"></div>
-            <div class="form-group"><label>Descripción</label><input type="text" name="descripcion" required value="{{ edit_item.descripcion if edit_item else '' }}"></div>
-            <div class="form-group"><label>Precio de Venta ($)</label><input type="number" step="0.01" min="0" name="precio" required value="{{ edit_item.precio if edit_item else '' }}"></div>
-            <div class="form-group"><label>Stock Inicial (Físico Actual)</label><input type="number" min="0" name="stock" required value="{{ edit_item.stock if edit_item else '0' }}"></div>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>SKU</th>
+                    <th>Nombre</th>
+                    <th>Categoría</th>
+                    <th>Precio Venta</th>
+                    <th>Stock Actual</th>
+                    <th>Min</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in items %}
+                <tr>
+                    <td><span class="user-badge" style="background-color: #f3f4f6; color: var(--verde-oscuro);">{{ p.sku }}</span></td>
+                    <td><strong style="color: var(--verde-medio);">{{ p.nombre }}</strong></td>
+                    <td>{{ p.categoria.nombre if p.categoria else 'N/A' }}</td>
+                    <td style="font-weight: 700;">${{ "{:,.2f}".format(p.precio_venta) }}</td>
+                    <td style="font-weight: 700; color: {{ '#dc2626' if p.stock_actual <= p.stock_minimo else 'var(--verde-fuerte)' }};">
+                        {{ p.stock_actual }} {{ p.unidad.abreviatura if p.unidad else '' }}
+                    </td>
+                    <td>{{ p.stock_minimo }}</td>
+                    <td>
+                        <span style="display: inline-flex; width: 10px; height: 10px; border-radius: 50%; background-color: {{ '#bef264' if p.estado == 'Activo' else '#94a3b8' }}; margin-right: 5px;"></span>
+                        {{ p.estado }}
+                    </td>
+                    <td>
+                        <div style="display: flex; gap: 8px;">
+                            <a href="#" class="btn" style="background-color: #f3f4f6; color: var(--verde-oscuro); padding: 6px;"><i class="fas fa-edit"></i></a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div id="form-card" class="card" style="max-width: 800px; margin: 2rem auto;">
+    <h3 style="margin-bottom: 1.5rem;"><i class="fas fa-edit"></i> Gestión de Producto</h3>
+    <form action="{{ url_for('productos') }}" method="POST">
+        <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 1.5rem;">
             <div class="form-group">
-                <label>Proveedor Asociado</label>
-                <select name="proveedor_id" required>
-                    <option value="">-- Seleccione Proveedor --</option>
-                    {% for prv in proveedores %}
-                    <option value="{{ prv.id }}" {% if edit_item and edit_item.proveedor_id == prv.id %}selected{% endif %}>{{ prv.empresa }}</option>
+                <label>SKU / Código</label>
+                <input type="text" name="sku" required placeholder="P-001">
+            </div>
+            <div class="form-group">
+                <label>Nombre del Producto</label>
+                <input type="text" name="nombre" required placeholder="Aceite de Palma Crudo">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Descripción</label>
+            <textarea name="descripcion" rows="2" placeholder="Detalles técnicos..."></textarea>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+            <div class="form-group">
+                <label>Categoría</label>
+                <select name="categoria_id" required>
+                    {% for c in categorias %}
+                    <option value="{{ c.id }}">{{ c.nombre }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Unidad de Medida</label>
+                <select name="unidad_id" required>
+                    {% for u in unidades %}
+                    <option value="{{ u.id }}">{{ u.nombre }} ({{ u.abreviatura }})</option>
                     {% endfor %}
                 </select>
             </div>
         </div>
-        <button type="submit" class="btn">{{ 'Actualizar Producto' if edit_item else 'Crear Producto' }}</button>
-        {% if edit_item %}<a href="{{ url_for('productos') }}" class="btn" style="background-color: gray;">Cancelar Edición</a>{% endif %}
-    </form>
-</div>
 
-<div class="card">
-    <h2>Inventario y Catálogo de Productos</h2>
-    <table>
-        <tr><th>ID</th><th>Nombre del Producto</th><th>Descripción</th><th>Precio</th><th>Stock Disponible</th><th>Acciones</th></tr>
-        {% for p in items %}
-        <tr>
-            <td>{{ p.id }}</td><td><strong>{{ p.nombre }}</strong></td><td>{{ p.descripcion }}</td><td>${{ "%.2f"|format(p.precio) }}</td>
-            <td>
-                {% if p.stock > 20 %}
-                    <span class="badge" style="background-color: var(--verde-fuerte); color: white;">{{ p.stock }} en stock</span>
-                {% elif p.stock > 5 %}
-                    <span class="badge" style="background-color: var(--verde-claro); color: var(--verde-oscuro);">{{ p.stock }} en stock</span>
-                {% else %}
-                    <span class="badge badge-low">{{ p.stock }} (Bajo)</span>
-                {% endif %}
-            </td>
-            <td>
-                <a href="{{ url_for('productos', id=p.id) }}" class="btn">Editar</a> 
-                <a href="{{ url_for('delete_producto', id=p.id) }}" class="btn btn-danger" onclick="return confirm('¿Desea eliminar este producto del inventario?')">Eliminar</a>
-            </td>
-        </tr>
-        {% else %}<tr><td colspan="6">No hay productos. Registre uno para comenzar el inventario.</td></tr>{% endfor %}
-    </table>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+            <div class="form-group">
+                <label>Precio de Venta</label>
+                <input type="number" step="0.01" name="precio" required value="0.00">
+            </div>
+            <div class="form-group">
+                <label>Stock Mínimo</label>
+                <input type="number" name="stock_minimo" required value="5">
+            </div>
+        </div>
+
+        <div style="text-align: right; margin-top: 1rem;">
+            <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Guardar Producto</button>
+        </div>
+    </form>
 </div>
 {% endblock %}

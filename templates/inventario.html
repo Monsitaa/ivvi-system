@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Control de Inventario{% endblock %}
+{% block content %}
+<div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+        <h3><i class="fas fa-boxes"></i> Stock Actual en Bodega</h3>
+        <div class="user-badge" style="background-color: var(--verde-oscuro); color: white;">Total SKU: {{ items|length }}</div>
+    </div>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Producto</th>
+                    <th>Categoría</th>
+                    <th>Stock Actual</th>
+                    <th>Stock Mínimo</th>
+                    <th>Estado</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in items %}
+                <tr>
+                    <td><strong>{{ p.nombre }}</strong><br><small style="color: #6b7280;">{{ p.sku }}</small></td>
+                    <td>{{ p.categoria.nombre if p.categoria else 'Sin Categoría' }}</td>
+                    <td style="font-weight: 800; font-size: 1.1rem; color: {{ '#dc2626' if p.stock_actual <= p.stock_minimo else 'var(--verde-oscuro)' }};">
+                        {{ p.stock_actual }} {{ p.unidad.abreviatura if p.unidad else '' }}
+                        {% if p.stock_actual <= p.stock_minimo %}
+                            <i class="fas fa-arrow-down" style="color: #dc2626; margin-left: 5px;"></i>
+                        {% endif %}
+                    </td>
+                    <td>{{ p.stock_minimo }}</td>
+                    <td>
+                        <span class="user-badge" style="background-color: {{ '#bef264' if p.estado == 'Activo' else '#e5e7eb' }};">
+                            {{ p.estado }}
+                        </span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

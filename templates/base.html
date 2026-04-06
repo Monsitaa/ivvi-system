@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IVVI - Sistema de Gestión de Aceite de Palma</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    {% block head %}{% endblock %}
+</head>
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <img src="{{ url_for('static', filename='logo.png') }}" alt="IVVI Logo">
+            <h1>IVVI S.A.</h1>
+        </div>
+
+        <nav class="sidebar-menu">
+            <!-- Dashboard -->
+            <div class="menu-section">
+                <a href="{{ url_for('index') }}" class="menu-item {{ 'active' if request.endpoint == 'index' }}">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Dashboard</span>
+                </a>
+            </div>
+
+            <!-- Maestros -->
+            <div class="menu-label">Maestros</div>
+            <div class="menu-section">
+                {% if current_user.rol in ['Administrador', 'Operador de Almacén', 'Vendedor', 'Gerencia'] %}
+                <a href="{{ url_for('productos') }}" class="menu-item {{ 'active' if request.endpoint == 'productos' }}">
+                    <i class="fas fa-boxes"></i>
+                    <span>Productos</span>
+                </a>
+                {% endif %}
+                
+                {% if current_user.rol == 'Administrador' %}
+                <a href="{{ url_for('categorias') }}" class="menu-item {{ 'active' if request.endpoint == 'categorias' }}">
+                    <i class="fas fa-tags"></i>
+                    <span>Categorías</span>
+                </a>
+                <a href="{{ url_for('unidades') }}" class="menu-item {{ 'active' if request.endpoint == 'unidades' }}">
+                    <i class="fas fa-balance-scale"></i>
+                    <span>Unidades de Medida</span>
+                </a>
+                <a href="{{ url_for('bodegas') }}" class="menu-item {{ 'active' if request.endpoint == 'bodegas' }}">
+                    <i class="fas fa-warehouse"></i>
+                    <span>Bodegas</span>
+                </a>
+                <a href="{{ url_for('empleados') }}" class="menu-item {{ 'active' if request.endpoint == 'empleados' }}">
+                    <i class="fas fa-id-card"></i>
+                    <span>Empleados</span>
+                </a>
+                {% endif %}
+
+                {% if current_user.rol in ['Administrador', 'Operador de Almacén'] %}
+                <a href="{{ url_for('proveedores') }}" class="menu-item {{ 'active' if request.endpoint == 'proveedores' }}">
+                    <i class="fas fa-truck"></i>
+                    <span>Proveedores</span>
+                </a>
+                {% endif %}
+
+                {% if current_user.rol in ['Administrador', 'Vendedor'] %}
+                <a href="{{ url_for('clientes') }}" class="menu-item {{ 'active' if request.endpoint == 'clientes' }}">
+                    <i class="fas fa-users"></i>
+                    <span>Clientes</span>
+                </a>
+                {% endif %}
+            </div>
+
+            <!-- Operaciones -->
+            <div class="menu-label">Operaciones</div>
+            <div class="menu-section">
+                {% if current_user.rol in ['Administrador', 'Operador de Almacén'] %}
+                <a href="{{ url_for('compras') }}" class="menu-item {{ 'active' if request.endpoint == 'compras' }}">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span>Compras</span>
+                </a>
+                {% endif %}
+
+                {% if current_user.rol in ['Administrador', 'Vendedor'] %}
+                <a href="{{ url_for('ventas') }}" class="menu-item {{ 'active' if request.endpoint == 'ventas' }}">
+                    <i class="fas fa-cash-register"></i>
+                    <span>Ventas</span>
+                </a>
+                {% endif %}
+
+                {% if current_user.rol in ['Administrador', 'Operador de Almacén', 'Gerencia'] %}
+                <a href="{{ url_for('inventario') }}" class="menu-item {{ 'active' if request.endpoint == 'inventario' }}">
+                    <i class="fas fa-clipboard-list"></i>
+                    <span>Inventario</span>
+                </a>
+                <a href="{{ url_for('kardex') }}" class="menu-item {{ 'active' if request.endpoint == 'kardex' }}">
+                    <i class="fas fa-history"></i>
+                    <span>Kardex</span>
+                </a>
+                {% endif %}
+            </div>
+
+            <!-- Administración -->
+            {% if current_user.rol == 'Administrador' %}
+            <div class="menu-label">Administración</div>
+            <div class="menu-section">
+                <a href="{{ url_for('usuarios') }}" class="menu-item {{ 'active' if request.endpoint == 'usuarios' }}">
+                    <i class="fas fa-user-shield"></i>
+                    <span>Usuarios</span>
+                </a>
+                <a href="{{ url_for('configuracion') }}" class="menu-item {{ 'active' if request.endpoint == 'configuracion' }}">
+                    <i class="fas fa-cog"></i>
+                    <span>Configuración</span>
+                </a>
+            </div>
+            {% endif %}
+
+            <!-- Reportes -->
+            <div class="menu-label">Reportes</div>
+            <div class="menu-section">
+                <a href="{{ url_for('reportes') }}" class="menu-item {{ 'active' if request.endpoint == 'reportes' }}">
+                    <i class="fas fa-file-invoice-dollar"></i>
+                    <span>Panel de Reportes</span>
+                </a>
+            </div>
+        </nav>
+
+        <div class="sidebar-footer">
+            <a href="{{ url_for('auth.logout') }}" class="menu-item" style="color: #ed823a;">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Cerrar Sesión</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Wrapper -->
+    <div class="main-wrapper">
+        <header class="header">
+            <div class="header-breadcrumb">
+                <span style="color: #6b7280; font-size: 0.875rem;">Panel de Control</span>
+                <h2 style="font-size: 1.125rem; font-weight: 700;">{% block title %}Inicio{% endblock %}</h2>
+            </div>
+            <div class="header-user">
+                <div class="user-badge">{{ current_user.rol }}</div>
+                <div style="text-align: right;">
+                    <p style="font-weight: 600; font-size: 0.875rem;">{{ current_user.nombre }}</p>
+                    <p style="font-size: 0.75rem; color: #6b7280;">{{ current_user.email }}</p>
+                </div>
+                <div style="width: 40px; height: 40px; border-radius: 50%; background-color: var(--verde-fuerte); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700;">
+                    {{ current_user.nombre[0].upper() }}
+                </div>
+            </div>
+        </header>
+
+        <main class="content">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ 'success' if category == 'success' else 'error' }}">
+                            <i class="fas {{ 'fa-check-circle' if category == 'success' else 'fa-exclamation-circle' }}"></i>
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

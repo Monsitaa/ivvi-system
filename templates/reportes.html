@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Panel de Reportes{% endblock %}
+{% block content %}
+<div class="dashboard-grid">
+    <div class="card">
+        <h3><i class="fas fa-shopping-cart"></i> Reporte de Compras</h3>
+        <p>Ventas detalladas por proveedor y fecha.</p>
+        <button class="btn btn-primary" style="margin-top: 1rem;"><i class="fas fa-file-excel"></i> Exportar</button>
+    </div>
+    <div class="card">
+        <h3><i class="fas fa-cash-register"></i> Reporte de Ventas</h3>
+        <p>Ventas detalladas por cliente y fecha.</p>
+        <button class="btn btn-primary" style="margin-top: 1rem;"><i class="fas fa-file-pdf"></i> Exportar</button>
+    </div>
+    <div class="card">
+        <h3><i class="fas fa-boxes"></i> Reporte de Inventario</h3>
+        <p>Estado actual de productos en bodega.</p>
+        <button class="btn btn-primary" style="margin-top: 1rem;"><i class="fas fa-file-csv"></i> Exportar</button>
+    </div>
+</div>
+{% endblock %}

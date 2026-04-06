@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Configuración del Sistema{% endblock %}
+{% block content %}
+<div class="card" style="max-width: 800px;">
+    <h3><i class="fas fa-cogs"></i> Ajustes Institucionales</h3>
+    <p style="color: #6b7280; margin-bottom: 2rem;">Configure los datos de IVVI S.A. para los documentos y reportes.</p>
+    
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+        <div class="form-group">
+            <label>Nombre de la Empresa</label>
+            <input type="text" value="IVVI S.A." readonly>
+        </div>
+        <div class="form-group">
+            <label>RUC Institucional</label>
+            <input type="text" value="1790000000001" readonly>
+        </div>
+    </div>
+    <div class="form-group">
+        <label>Dirección Matriz</label>
+        <input type="text" value="Av. Principal Km 10, Zona Industrial" readonly>
+    </div>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+        <div class="form-group">
+            <label>Teléfono de Contacto</label>
+            <input type="text" value="+593 99 999 9999" readonly>
+        </div>
+        <div class="form-group">
+            <label>Correo de Soporte</label>
+            <input type="email" value="soporte@ivvi.com" readonly>
+        </div>
+    </div>
+    <div style="text-align: right;">
+        <button class="btn btn-primary" disabled>Guardar Cambios (Módulo en Desarrollo)</button>
+    </div>
+</div>
+{% endblock %}

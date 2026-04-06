@@ -1,43 +1,132 @@
-{% extends "layout.html" %}
+{% extends "base.html" %}
+
+{% block title %}Ingreso de Compras{% endblock %}
+
 {% block content %}
-<div class="card" style="border-top: 5px solid var(--verde-fuerte);">
-    <h2 style="color: var(--verde-fuerte)">Registrar Compra a Proveedor (Ingresa al Inventario)</h2>
-    <form method="POST" action="{{ url_for('compras') }}">
-        <div class="grid-2">
+<div class="card">
+    <h3><i class="fas fa-truck-loading" style="color: var(--verde-fuerte);"></i> Nueva Orden de Compra</h3>
+    <form action="{{ url_for('compras') }}" method="POST" id="compra-form" style="margin-top: 1.5rem;">
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; margin-bottom: 2rem;">
             <div class="form-group">
-                <label>Producto Adquirido</label>
-                <select name="producto_id" required>
-                    <option value="">-- Seleccionar Producto --</option>
-                    {% for p in productos %}
-                    <option value="{{ p.id }}">{{ p.nombre }} (Stock actual: {{ p.stock }})</option>
+                <label>Proveedor</label>
+                <select name="proveedor_id" required>
+                    {% for p in proveedores %}
+                    <option value="{{ p.id }}">{{ p.razon_social }} ({{ p.ruc }})</option>
                     {% endfor %}
                 </select>
             </div>
             <div class="form-group">
-                <label>Cantidad Comprada (Nuevas Unidades)</label>
-                <input type="number" min="1" name="cantidad" required placeholder="Ej: 100">
+                <label>Bodega de Destino</label>
+                <select name="bodega_id" required>
+                    {% for b in bodegas %}
+                    <option value="{{ b.id }}">{{ b.nombre }}</option>
+                    {% endfor %}
+                </select>
             </div>
         </div>
-        <button type="submit" class="btn">Registrar Ingreso de Mercancía</button>
-        <p style="margin-top: 10px; font-size: 0.9rem; color: #555;"><i>Nota: La compra incrementará automáticamente el stock físico en el inventario de la empresa.</i></p>
+
+        <div class="table-container" style="margin-bottom: 1.5rem;">
+            <table id="detalle-tabla">
+                <thead>
+                    <tr>
+                        <th style="width: 40%;">Producto</th>
+                        <th>Cantidad</th>
+                        <th>Costo Unit.</th>
+                        <th>Subtotal</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody id="detalle-body">
+                    <tr>
+                        <td>
+                            <select name="producto_id[]" required>
+                                <option value="" selected disabled>Seleccionar...</option>
+                                {% for p in productos %}
+                                <option value="{{ p.id }}">{{ p.nombre }}</option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                        <td><input type="number" name="cantidad[]" class="cant-input" required min="1" value="1" oninput="calculateRow(this)"></td>
+                        <td><input type="number" step="0.01" name="costo[]" class="cost-input" required value="0.00" oninput="calculateRow(this)"></td>
+                        <td><input type="number" class="sub-input" readonly value="0.00"></td>
+                        <td></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+            <button type="button" class="btn" style="background-color: var(--fondo-suave); color: var(--verde-oscuro);" onclick="addRow()">
+                <i class="fas fa-plus"></i> Agregar Línea
+            </button>
+            <div style="text-align: right;">
+                <h4 style="color: #6b7280; margin-bottom: 0.5rem;">Total Compra</h4>
+                <div id="total-compra" style="font-size: 2.5rem; font-weight: 800; color: var(--naranja);">$0.00</div>
+                <button type="submit" class="btn btn-primary" style="margin-top: 1rem; width: 100%; background-color: var(--naranja);">
+                    <i class="fas fa-save"></i> Registrar Compra
+                </button>
+            </div>
+        </div>
     </form>
 </div>
 
-<div class="card">
-    <h2>Historial de Compras Inbound (Abastecimiento)</h2>
-    <table>
-        <tr><th>ID Compra</th><th>Fecha de Operación</th><th>Producto Adquirido</th><th>Cantidad Ingresada</th><th>Acciones</th></tr>
-        {% for c in items %}
-        <tr>
-            <td>#{{ c.id }}</td>
-            <td>{{ c.fecha }}</td>
-            <td><strong>{{ get_prod(c.producto_id).nombre }}</strong></td>
-            <td><strong style="color:var(--verde-fuerte)">+{{ c.cantidad }} (Entrada)</strong></td>
-            <td>
-                <a href="{{ url_for('delete_compra', id=c.id) }}" class="btn btn-danger" onclick="return confirm('¿Desea eliminar el registro de esta compra? El stock ingresado se descontará del inventario.')">Anular Compra</a>
-            </td>
-        </tr>
-        {% else %}<tr><td colspan="5">No se han registrado operaciones de compra al proveedor.</td></tr>{% endfor %}
-    </table>
+<div class="card" style="margin-top: 2rem;">
+    <h3>Historial de Compras</h3>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Fecha</th>
+                    <th>Proveedor</th>
+                    <th>Bodega</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                <tr>
+                    <td>#{{ item.id }}</td>
+                    <td>{{ item.fecha.strftime('%d/%m/%Y %H:%M') }}</td>
+                    <td>{{ item.proveedor.razon_social }}</td>
+                    <td>{{ item.bodega.nombre }}</td>
+                    <td style="font-weight: 700;">${{ "{:,.2f}".format(item.total) }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function calculateRow(input) {
+        const row = input.closest('tr');
+        const cant = row.querySelector('.cant-input').value;
+        const cost = row.querySelector('.cost-input').value;
+        row.querySelector('.sub-input').value = (cant * cost).toFixed(2);
+        calculateTotal();
+    }
+
+    function calculateTotal() {
+        let total = 0;
+        document.querySelectorAll('.sub-input').forEach(input => {
+            total += parseFloat(input.value || 0);
+        });
+        document.getElementById('total-compra').innerText = '$' + total.toLocaleString('en-US', {minimumFractionDigits: 2});
+    }
+
+    function addRow() {
+        const tbody = document.getElementById('detalle-body');
+        const newRow = tbody.rows[0].cloneNode(true);
+        newRow.querySelectorAll('input').forEach(i => i.value = i.defaultValue);
+        newRow.querySelector('select').selectedIndex = 0;
+        
+        const delTd = newRow.cells[4];
+        delTd.innerHTML = '<button type="button" class="btn btn-danger" style="padding: 4px 8px;" onclick="this.closest(\'tr\').remove(); calculateTotal();"><i class="fas fa-trash"></i></button>';
+        
+        tbody.appendChild(newRow);
+    }
+</script>
 {% endblock %}

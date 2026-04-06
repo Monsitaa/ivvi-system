@@ -1,18 +1,23 @@
 import os
-from flask import Flask, render_template, request, redirect, url_for, flash
-from models import Cliente, Usuario, Proveedor, Producto, Inventario, Compra, Venta
-from db import db
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
+from models import (
+    db, Usuario, Cliente, Proveedor, Producto, 
+    Categoria, UnidadMedida, Bodega, Empleado, 
+    Compra, DetalleCompra, Venta, DetalleVenta, 
+    Kardex, InventarioService
+)
 import datetime
+import io
+from sqlalchemy import func
 
 from routes.auth import auth_bp
 from routes.auth_utils import login_required, role_required, get_current_user
 
 app = Flask(__name__)
-app.secret_key = 'ivvi_secret_key'
+app.secret_key = 'ivvi_secret_key_pro'
 
 # Configuración base de datos SQLite
 basedir = os.path.abspath(os.path.dirname(__file__))
-# Asegurar db.sqlite3 se crea en esta carpeta
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'database.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
@@ -20,12 +25,13 @@ db.init_app(app)
 
 with app.app_context():
     db.create_all()
-    # Si la base de datos está vacía, crear al administrador inicial
-    if not Usuario.query.first():
+    # Semilla inicial: Administrador
+    if not Usuario.query.filter_by(rol='Administrador').first():
         admin = Usuario(
-            nombre="Admin General", 
-            telefono="555-0000", 
+            nombre="Administrador IVVI", 
+            telefono="0999999999", 
             email="admin@ivvi.com", 
+            direccion="Oficinas IVVI",
             rol="Administrador", 
             password="admin123"
         )
@@ -41,235 +47,304 @@ def inject_user():
 @app.route('/')
 @login_required
 def index():
-    p_count = Producto.query.count()
-    v_count = Venta.query.count()
-    c_count = Compra.query.count()
-    u_count = Usuario.query.count()
-    return render_template('index.html', p_count=p_count, v_count=v_count, c_count=c_count, u_count=u_count)
-
-# --- USUARIOS ---
-@app.route('/usuarios', methods=['GET', 'POST'])
-@app.route('/usuarios/<int:id>', methods=['GET', 'POST'])
-@login_required
-@role_required('Administrador')
-def usuarios(id=None):
-    if request.method == 'POST':
-        nombre, telefono, email, rol = request.form['nombre'], request.form['telefono'], request.form['email'], request.form['rol']
-        password = request.form.get('password')
-        if id:
-            usr = Usuario.query.get_or_404(id)
-            usr.nombre, usr.telefono, usr.email, usr.rol = nombre, telefono, email, rol
-            if password: 
-                usr.password = password
-            db.session.commit()
-            flash('Usuario actualizado', 'success')
-        else:
-            if not password: password = '123'
-            usr = Usuario(nombre=nombre, telefono=telefono, email=email, rol=rol, password=password)
-            db.session.add(usr)
-            db.session.commit()
-            flash('Usuario creado', 'success')
-        return redirect(url_for('usuarios'))
+    # KPIs para el Dashboard
+    total_productos = Producto.query.count()
+    total_clientes = Cliente.query.count()
+    total_proveedores = Proveedor.query.count()
     
-    users = Usuario.query.all()
-    edit_item = Usuario.query.get(id) if id else None
-    return render_template('usuarios.html', items=users, edit_item=edit_item)
-
-@app.route('/usuarios/delete/<int:id>')
-@login_required
-@role_required('Administrador')
-def delete_usuario(id):
-    usr = Usuario.query.get(id)
-    if usr:
-        if usr.email == 'admin@ivvi.com':
-            flash('No puedes eliminar al administrador principal del sistema.', 'error')
-        else:
-            db.session.delete(usr)
-            db.session.commit()
-            flash('Usuario eliminado', 'success')
-    return redirect(url_for('usuarios'))
-
-# --- CLIENTES ---
-@app.route('/clientes', methods=['GET', 'POST'])
-@app.route('/clientes/<int:id>', methods=['GET', 'POST'])
-@login_required
-@role_required('Ventas')
-def clientes(id=None):
-    if request.method == 'POST':
-        nombre, tel, email, direccion = request.form['nombre'], request.form['telefono'], request.form['email'], request.form['direccion']
-        if id:
-            c = Cliente.query.get_or_404(id)
-            c.nombre, c.telefono, c.email, c.direccion = nombre, tel, email, direccion
-            db.session.commit()
-            flash('Cliente actualizado', 'success')
-        else:
-            c = Cliente(nombre=nombre, telefono=tel, email=email, direccion=direccion)
-            db.session.add(c)
-            db.session.commit()
-            flash('Cliente creado', 'success')
-        return redirect(url_for('clientes'))
+    # Ventas del mes actual (Ejemplo simple)
+    hoy = datetime.datetime.now()
+    inicio_mes = datetime.datetime(hoy.year, hoy.month, 1)
+    # Suma de totales de ventas este mes
+    ventas_mes = db.session.query(func.sum(Venta.total)).filter(Venta.fecha >= inicio_mes).scalar() or 0.0
+    compras_mes = db.session.query(func.sum(Compra.total)).filter(Compra.fecha >= inicio_mes).scalar() or 0.0
     
-    clients = Cliente.query.all()
-    edit_item = Cliente.query.get(id) if id else None
-    return render_template('clientes.html', items=clients, edit_item=edit_item)
+    productos_bajo_stock = Producto.query.filter(Producto.stock_actual <= Producto.stock_minimo).all()
+    ultimas_ventas = Venta.query.order_by(Venta.id.desc()).limit(5).all()
+    ultimas_compras = Compra.query.order_by(Compra.id.desc()).limit(5).all()
+    
+    return render_template('index.html', 
+                           tp=total_productos, tc=total_clientes, prov=total_proveedores,
+                           vm=ventas_mes, cm=compras_mes,
+                           bajo_stock=productos_bajo_stock,
+                           ventas=ultimas_ventas, compras=ultimas_compras)
 
-@app.route('/clientes/delete/<int:id>')
-@login_required
-@role_required('Ventas')
-def delete_cliente(id):
-    c = Cliente.query.get(id)
-    if c:
-        db.session.delete(c)
-        db.session.commit()
-        flash('Cliente eliminado', 'success')
-    return redirect(url_for('clientes'))
+# --- MAESTROS (CRUD) ---
 
-# --- PROVEEDORES ---
-@app.route('/proveedores', methods=['GET', 'POST'])
-@app.route('/proveedores/<int:id>', methods=['GET', 'POST'])
-@login_required
-@role_required('Inventario')
-def proveedores(id=None):
-    if request.method == 'POST':
-        empresa, contacto, tel = request.form['empresa'], request.form['contacto'], request.form['telefono']
-        if id:
-            p = Proveedor.query.get_or_404(id)
-            p.empresa, p.contacto, p.telefono = empresa, contacto, tel
-            db.session.commit()
-            flash('Proveedor actualizado', 'success')
-        else:
-            p = Proveedor(empresa=empresa, contacto=contacto, telefono=tel)
-            db.session.add(p)
-            db.session.commit()
-            flash('Proveedor creado', 'success')
-        return redirect(url_for('proveedores'))
-        
-    provs = Proveedor.query.all()
-    edit_item = Proveedor.query.get(id) if id else None
-    return render_template('proveedores.html', items=provs, edit_item=edit_item)
-
-@app.route('/proveedores/delete/<int:id>')
-@login_required
-@role_required('Inventario')
-def delete_proveedor(id):
-    p = Proveedor.query.get(id)
-    if p:
-        db.session.delete(p)
-        db.session.commit()
-        flash('Proveedor eliminado', 'success')
-    return redirect(url_for('proveedores'))
-
-# --- PRODUCTOS ---
 @app.route('/productos', methods=['GET', 'POST'])
-@app.route('/productos/<int:id>', methods=['GET', 'POST'])
 @login_required
-@role_required('Inventario', 'Ventas')
-def productos(id=None):
+def productos():
     if request.method == 'POST':
-        nombre, desc, precio, stock, prov_id = request.form['nombre'], request.form['descripcion'], request.form['precio'], request.form['stock'], request.form['proveedor_id']
-        if id:
-            p = Producto.query.get_or_404(id)
-            p.nombre, p.descripcion, p.precio, p.proveedor_id = nombre, desc, float(precio), int(prov_id)
-            p.stock = int(stock) 
-            db.session.commit()
+        # Guardar / Editar
+        id_prod = request.form.get('id')
+        sku, nombre, desc = request.form['sku'], request.form['nombre'], request.form['descripcion']
+        cat_id, uni_id, precio = int(request.form['categoria_id']), int(request.form['unidad_id']), float(request.form['precio'])
+        stock_min = int(request.form['stock_minimo'])
+        
+        if id_prod:
+            p = Producto.query.get(id_prod)
+            p.sku, p.nombre, p.descripcion = sku, nombre, desc
+            p.categoria_id, p.unidad_id, p.precio_venta = cat_id, uni_id, precio
+            p.stock_minimo = stock_min
             flash('Producto actualizado', 'success')
         else:
-            p = Producto(nombre=nombre, descripcion=desc, precio=float(precio), stock=int(stock), proveedor_id=int(prov_id))
+            p = Producto(sku=sku, nombre=nombre, descripcion=desc, categoria_id=cat_id, unidad_id=uni_id, precio_venta=precio, stock_minimo=stock_min)
             db.session.add(p)
-            db.session.commit()
             flash('Producto creado', 'success')
+        db.session.commit()
         return redirect(url_for('productos'))
         
     prods = Producto.query.all()
-    provs = Proveedor.query.all()
-    edit_item = Producto.query.get(id) if id else None
-    return render_template('productos.html', items=prods, proveedores=provs, edit_item=edit_item)
+    cats = Categoria.query.all()
+    unis = UnidadMedida.query.all()
+    return render_template('productos.html', items=prods, categorias=cats, unidades=unis)
 
-@app.route('/productos/delete/<int:id>')
+# Rutas Auxiliares (Categorías, Unidades, Bodegas, Empleados)
+@app.route('/categorias', methods=['GET', 'POST'])
 @login_required
-@role_required('Inventario')
-def delete_producto(id):
-    p = Producto.query.get(id)
-    if p:
-        db.session.delete(p)
+@role_required('Administrador')
+def categorias():
+    if request.method == 'POST':
+        nombre, desc = request.form['nombre'], request.form['descripcion']
+        c = Categoria(nombre=nombre, descripcion=desc)
+        db.session.add(c)
         db.session.commit()
-        flash('Producto eliminado', 'success')
-    return redirect(url_for('productos'))
+        flash('Categoría creada', 'success')
+        return redirect(url_for('categorias'))
+    return render_template('maestros/categorias.html', items=Categoria.query.all())
 
-# --- VENTAS ---
+@app.route('/unidades', methods=['GET', 'POST'])
+@login_required
+@role_required('Administrador')
+def unidades():
+    if request.method == 'POST':
+        nombre, abr = request.form['nombre'], request.form['abreviatura']
+        u = UnidadMedida(nombre=nombre, abreviatura=abr)
+        db.session.add(u)
+        db.session.commit()
+        flash('Unidad de medida creada', 'success')
+        return redirect(url_for('unidades'))
+    return render_template('maestros/unidades.html', items=UnidadMedida.query.all())
+
+@app.route('/bodegas', methods=['GET', 'POST'])
+@login_required
+@role_required('Administrador')
+def bodegas():
+    if request.method == 'POST':
+        nombre, ubi = request.form['nombre'], request.form['ubicacion']
+        b = Bodega(nombre=nombre, ubicacion=ubi)
+        db.session.add(b)
+        db.session.commit()
+        flash('Bodega creada', 'success')
+        return redirect(url_for('bodegas'))
+    return render_template('maestros/bodegas.html', items=Bodega.query.all())
+
+@app.route('/empleados', methods=['GET', 'POST'])
+@login_required
+@role_required('Administrador')
+def empleados():
+    if request.method == 'POST':
+        nombre, cargo, tel = request.form['nombre'], request.form['cargo'], request.form['telefono']
+        e = Empleado(nombre=nombre, cargo=cargo, telefono=tel)
+        db.session.add(e)
+        db.session.commit()
+        flash('Empleado creado', 'success')
+        return redirect(url_for('empleados'))
+    return render_template('maestros/empleados.html', items=Empleado.query.all())
+
+@app.route('/clientes', methods=['GET', 'POST'])
+@login_required
+@role_required('Administrador', 'Vendedor')
+def clientes():
+    if request.method == 'POST':
+        nombre, ruc, tel = request.form['nombre'], request.form['ruc'], request.form['telefono']
+        c = Cliente(nombre=nombre, ruc=ruc, telefono=tel, email=request.form['email'], direccion=request.form['direccion'])
+        db.session.add(c)
+        db.session.commit()
+        flash('Cliente registrado', 'success')
+        return redirect(url_for('clientes'))
+    return render_template('clientes.html', items=Cliente.query.all())
+
+@app.route('/proveedores', methods=['GET', 'POST'])
+@login_required
+@role_required('Administrador', 'Operador de Almacén')
+def proveedores():
+    if request.method == 'POST':
+        rs, ruc, tel = request.form['razon_social'], request.form['ruc'], request.form['telefono']
+        p = Proveedor(razon_social=rs, ruc=ruc, telefono=tel, email=request.form['email'])
+        db.session.add(p)
+        db.session.commit()
+        flash('Proveedor registrado', 'success')
+        return redirect(url_for('proveedores'))
+    return render_template('proveedores.html', items=Proveedor.query.all())
+
+# --- OPERACIONES ---
+
 @app.route('/ventas', methods=['GET', 'POST'])
-@app.route('/ventas/<int:id>', methods=['GET', 'POST'])
 @login_required
-@role_required('Ventas')
-def ventas(id=None):
+@role_required('Administrador', 'Vendedor')
+def ventas():
     if request.method == 'POST':
-        try:
-            prod_id, cant, cli_id = int(request.form['producto_id']), int(request.form['cantidad']), int(request.form['cliente_id'])
-            fecha_str = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            if id:
-                flash('Edición directa de ventas no permitida. Elimine y vuelva a crear para auditoría.', 'warning')
-            else:
-                Inventario.registrar_venta(prod_id, cant, cli_id, fecha_str)
-                db.session.commit()
-                flash('Venta registrada exitosamente', 'success')
-        except ValueError as e:
-            flash(str(e), 'error')
-        return redirect(url_for('ventas'))
+        # Lógica de venta Cabecera-Detalle
+        cliente_id = int(request.form['cliente_id'])
+        vendedor_id = get_current_user().id
+        nums_prod = request.form.getlist('producto_id[]')
+        cants = request.form.getlist('cantidad[]')
         
-    vnts = Venta.query.all()
-    prods = Producto.query.all()
-    clients = Cliente.query.all()
-    return render_template('ventas.html', items=vnts, productos=prods, clientes=clients, get_prod=lambda x: Producto.query.get(x), get_cli=lambda x: Cliente.query.get(x))
-
-@app.route('/ventas/delete/<int:id>')
-@login_required
-@role_required('Ventas')
-def delete_venta(id):
-    try:
-        Inventario.eliminar_venta(id)
+        nueva_venta = Venta(cliente_id=cliente_id, vendedor_id=vendedor_id, total=0.0)
+        db.session.add(nueva_venta)
+        db.session.flush() # Para obtener el ID
+        
+        total_acumulado = 0
+        for pid, cant in zip(nums_prod, cants):
+            prod = Producto.query.get(pid)
+            cantidad = int(cant)
+            if prod.validar_stock(cantidad):
+                sub = prod.precio_venta * cantidad
+                det = DetalleVenta(venta_id=nueva_venta.id, producto_id=pid, cantidad=cantidad, precio_unitario=prod.precio_venta, subtotal=sub)
+                db.session.add(det)
+                InventarioService.registrar_salida(pid, cantidad, f"Venta #{nueva_venta.id}", vendedor_id)
+                total_acumulado += sub
+            else:
+                db.session.rollback()
+                flash(f'Stock insuficiente para {prod.nombre}', 'error')
+                return redirect(url_for('ventas'))
+        
+        nueva_venta.total = total_acumulado
         db.session.commit()
-        flash('Venta eliminada, el stock regresó a inventario', 'success')
-    except Exception as e:
-        db.session.rollback()
-        flash('Error al eliminar venta.', 'error')
-    return redirect(url_for('ventas'))
+        flash('Venta registrada con éxito', 'success')
+        return redirect(url_for('ventas'))
 
-# --- COMPRAS ---
+    vnts = Venta.query.all()
+    prods = Producto.query.filter_by(estado='Activo').all()
+    clis = Cliente.query.all()
+    return render_template('ventas.html', items=vnts, productos=prods, clientes=clis)
+
 @app.route('/compras', methods=['GET', 'POST'])
-@app.route('/compras/<int:id>', methods=['GET', 'POST'])
 @login_required
-@role_required('Inventario')
-def compras(id=None):
+@role_required('Administrador', 'Operador de Almacén')
+def compras():
     if request.method == 'POST':
-        try:
-            prod_id, cant = int(request.form['producto_id']), int(request.form['cantidad'])
-            fecha_str = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            if id:
-                flash('Edición directa de compras no permitida. Elimine y vuelva a crear.', 'warning')
-            else:
-                Inventario.registrar_compra(prod_id, cant, fecha_str)
-                db.session.commit()
-                flash('Compra registrada exitosamente', 'success')
-        except ValueError as e:
-            flash(str(e), 'error')
-        return redirect(url_for('compras'))
+        prov_id = int(request.form['proveedor_id'])
+        bod_id = int(request.form['bodega_id'])
+        usr_id = get_current_user().id
+        nums_prod = request.form.getlist('producto_id[]')
+        cants = request.form.getlist('cantidad[]')
+        costos = request.form.getlist('costo[]')
         
+        nueva_compra = Compra(proveedor_id=prov_id, bodega_id=bod_id, total=0.0)
+        db.session.add(nueva_compra)
+        db.session.flush()
+        
+        total_acum = 0
+        for pid, cant, cst in zip(nums_prod, cants, costos):
+            cantidad = int(cant)
+            costo = float(cst)
+            sub = cantidad * costo
+            det = DetalleCompra(compra_id=nueva_compra.id, producto_id=pid, cantidad=cantidad, costo_unitario=costo, subtotal=sub)
+            db.session.add(det)
+            InventarioService.registrar_entrada(pid, cantidad, f"Compra #{nueva_compra.id}", usr_id)
+            total_acum += sub
+            
+        nueva_compra.total = total_acum
+        db.session.commit()
+        flash('Compra registrada con éxito', 'success')
+        return redirect(url_for('compras'))
+
     cmps = Compra.query.all()
     prods = Producto.query.all()
-    return render_template('compras.html', items=cmps, productos=prods, get_prod=lambda x: Producto.query.get(x))
+    provs = Proveedor.query.all()
+    bodegas = Bodega.query.all()
+    return render_template('compras.html', items=cmps, productos=prods, proveedores=provs, bodegas=bodegas)
 
-@app.route('/compras/delete/<int:id>')
+# --- INVENTARIO Y KARDEX ---
+
+@app.route('/inventario')
 @login_required
-@role_required('Inventario')
-def delete_compra(id):
-    try:
-        Inventario.eliminar_compra(id)
+def inventario():
+    prods = Producto.query.all()
+    return render_template('inventario.html', items=prods)
+
+@app.route('/kardex')
+@login_required
+def kardex():
+    movs = Kardex.query.order_by(Kardex.fecha.desc()).all()
+    return render_template('kardex.html', items=movs)
+
+# --- USUARIOS ---
+@app.route('/usuarios', methods=['GET', 'POST'])
+@login_required
+@role_required('Administrador')
+def usuarios():
+    if request.method == 'POST':
+        nombre, email, rol = request.form['nombre'], request.form['email'], request.form['rol']
+        pwd = request.form['password']
+        u = Usuario(nombre=nombre, email=email, rol=rol, password=pwd)
+        db.session.add(u)
         db.session.commit()
-        flash('Compra eliminada, el stock se descontó', 'success')
-    except Exception as e:
-        db.session.rollback()
-        flash('Error al eliminar compra.', 'error')
-    return redirect(url_for('compras'))
+        flash('Usuario creado', 'success')
+        return redirect(url_for('usuarios'))
+    return render_template('usuarios.html', items=Usuario.query.all())
+
+# --- CONFIGURACION Y REPORTES ---
+from flask import send_file
+from utils.pdf_generator import InvoiceGenerator
+import openpyxl
+
+@app.route('/ventas/pdf/<int:id>')
+@login_required
+def generar_factura_pdf(id):
+    venta = Venta.query.get_or_404(id)
+    pdf_buffer = InvoiceGenerator.generate_invoice(venta)
+    return send_file(
+        pdf_buffer,
+        as_attachment=True,
+        download_name=f'Factura_IVVI_{venta.id}.pdf',
+        mimetype='application/pdf'
+    )
+
+@app.route('/productos/excel')
+@login_required
+def exportar_productos_excel():
+    prods = Producto.query.all()
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "Inventario IVVI"
+    
+    headers = ['SKU', 'Nombre', 'Categoría', 'Unidad', 'Precio Venta', 'Stock Actual']
+    ws.append(headers)
+    
+    for p in prods:
+        ws.append([
+            p.sku, p.nombre, 
+            p.categoria.nombre if p.categoria else 'N/A',
+            p.unidad.abreviatura if p.unidad else 'N/A',
+            p.precio_venta, p.stock_actual
+        ])
+    
+    excel_buffer = io.BytesIO()
+    wb.save(excel_buffer)
+    excel_buffer.seek(0)
+    
+    return send_file(
+        excel_buffer,
+        as_attachment=True,
+        download_name='Inventario_IVVI.xlsx',
+        mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+
+@app.route('/configuracion')
+@login_required
+@role_required('Administrador')
+def configuracion():
+    return render_template('configuracion.html')
+
+@app.route('/reportes')
+@login_required
+def reportes():
+    return render_template('reportes.html')
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
+
+

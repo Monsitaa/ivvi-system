@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Unidades de Medida{% endblock %}
+{% block content %}
+<div class="card" style="max-width: 600px; margin-bottom: 2rem;">
+    <h3>Nueva Unidad</h3>
+    <form action="{{ url_for('unidades') }}" method="POST">
+        <div class="form-group">
+            <label>Nombre</label>
+            <input type="text" name="nombre" required placeholder="Litros">
+        </div>
+        <div class="form-group">
+            <label>Abreviatura</label>
+            <input type="text" name="abreviatura" required placeholder="L">
+        </div>
+        <button type="submit" class="btn btn-primary">Guardar</button>
+    </form>
+</div>
+<div class="card">
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Abreviatura</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                <tr>
+                    <td>{{ item.nombre }}</td>
+                    <td><span class="user-badge">{{ item.abreviatura }}</span></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

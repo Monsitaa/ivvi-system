@@ -1,53 +1,140 @@
-{% extends "layout.html" %}
+{% extends "base.html" %}
+
+{% block title %}Registro de Ventas{% endblock %}
+
 {% block content %}
-<div class="card" style="border-top: 5px solid var(--naranja);">
-    <h2 style="color: var(--naranja)">Registrar Nueva Venta (Afecta Inventario)</h2>
-    <form method="POST" action="{{ url_for('ventas') }}">
-        <div class="grid-2">
+<div class="card">
+    <h3><i class="fas fa-plus-circle" style="color: var(--verde-fuerte);"></i> Nueva Venta</h3>
+    <form action="{{ url_for('ventas') }}" method="POST" id="venta-form" style="margin-top: 1.5rem;">
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; margin-bottom: 2rem;">
             <div class="form-group">
-                <label>Producto a Vender</label>
-                <select name="producto_id" required>
-                    <option value="">-- Seleccionar Producto --</option>
-                    {% for p in productos %}
-                    <option value="{{ p.id }}">{{ p.nombre }} - [Disp: {{ p.stock }} unidades] - ${{ "%.2f"|format(p.precio) }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="form-group">
-                <label>Cliente (Comprador)</label>
+                <label>Cliente</label>
                 <select name="cliente_id" required>
-                    <option value="">-- Seleccionar Cliente --</option>
                     {% for c in clientes %}
-                    <option value="{{ c.id }}">{{ c.nombre }} - {{ c.direccion }}</option>
+                    <option value="{{ c.id }}">{{ c.nombre }} ({{ c.ruc }})</option>
                     {% endfor %}
                 </select>
             </div>
             <div class="form-group">
-                <label>Cantidad a Vender (Unidades)</label>
-                <input type="number" min="1" name="cantidad" required placeholder="Ej: 5">
+                <label>Número de Factura (Opcional)</label>
+                <input type="text" name="numero_factura" placeholder="001-001-000001">
             </div>
         </div>
-        <button type="submit" class="btn btn-important">Registrar Transacción</button>
-        <p style="margin-top: 10px; font-size: 0.9rem; color: #555;"><i>Nota: La venta descontará automáticamente el stock del inventario. Se validará que haya existencias suficientes.</i></p>
+
+        <div class="table-container" style="margin-bottom: 1.5rem;">
+            <table id="detalle-tabla">
+                <thead>
+                    <tr>
+                        <th style="width: 50%;">Producto</th>
+                        <th>Cantidad</th>
+                        <th>Precio Unit.</th>
+                        <th>Subtotal</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody id="detalle-body">
+                    <tr>
+                        <td>
+                            <select name="producto_id[]" class="prod-select" required onchange="updatePrice(this)">
+                                <option value="" selected disabled>Seleccionar...</option>
+                                {% for p in productos %}
+                                <option value="{{ p.id }}" data-price="{{ p.precio_venta }}">{{ p.nombre }} (${{ p.precio_venta }})</option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                        <td><input type="number" name="cantidad[]" class="cant-input" required min="1" value="1" oninput="calculateRow(this)"></td>
+                        <td><input type="number" class="price-input" readonly value="0.00"></td>
+                        <td><input type="number" class="sub-input" readonly value="0.00"></td>
+                        <td></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+            <button type="button" class="btn" style="background-color: var(--fondo-suave); color: var(--verde-oscuro);" onclick="addRow()">
+                <i class="fas fa-plus"></i> Agregar Línea
+            </button>
+            <div style="text-align: right;">
+                <h4 style="color: #6b7280; margin-bottom: 0.5rem;">Total a Pagar</h4>
+                <div id="total-venta" style="font-size: 2.5rem; font-weight: 800; color: var(--verde-oscuro);">$0.00</div>
+                <button type="submit" class="btn btn-primary" style="margin-top: 1rem; width: 100%;">
+                    <i class="fas fa-check-double"></i> Confirmar Venta
+                </button>
+            </div>
+        </div>
     </form>
 </div>
 
-<div class="card">
-    <h2>Historial de Ventas Outbound</h2>
-    <table>
-        <tr><th>ID Venta</th><th>Fecha de Operación</th><th>Producto Vendido</th><th>Cliente Destino</th><th>Cantidad</th><th>Acciones</th></tr>
-        {% for v in items %}
-        <tr>
-            <td>#{{ v.id }}</td>
-            <td>{{ v.fecha }}</td>
-            <td><strong>{{ get_prod(v.producto_id).nombre }}</strong></td>
-            <td>{{ get_cli(v.cliente_id).nombre }}</td>
-            <td><strong style="color:var(--naranja)">-{{ v.cantidad }} (Salida)</strong></td>
-            <td>
-                <a href="{{ url_for('delete_venta', id=v.id) }}" class="btn btn-danger" onclick="return confirm('¿Realmente desea anular esta venta? El stock de los productos vendidos regresará al inventario automáticamente.')">Anular Venta</a>
-            </td>
-        </tr>
-        {% else %}<tr><td colspan="6">No se han registrado ventas hasta el momento.</td></tr>{% endfor %}
-    </table>
+<div class="card" style="margin-top: 2rem;">
+    <h3>Historial de Ventas</h3>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Fecha</th>
+                    <th>Cliente</th>
+                    <th>Vendedor</th>
+                    <th>Total</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                <tr>
+                    <td>#{{ item.id }}</td>
+                    <td>{{ item.fecha.strftime('%d/%m/%Y %H:%M') }}</td>
+                    <td>{{ item.cliente.nombre }}</td>
+                    <td>{{ item.usuario.nombre if item.usuario else 'Sistema' }}</td>
+                    <td style="font-weight: 700;">${{ "{:,.2f}".format(item.total) }}</td>
+                    <td>
+                        <a href="#" class="btn" style="background-color: #f3f4f6; color: var(--verde-oscuro); padding: 4px 8px;"><i class="fas fa-file-pdf"></i></a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function updatePrice(select) {
+        const row = select.closest('tr');
+        const price = select.options[select.selectedIndex].dataset.price;
+        row.querySelector('.price-input').value = price;
+        calculateRow(row.querySelector('.cant-input'));
+    }
+
+    function calculateRow(input) {
+        const row = input.closest('tr');
+        const cant = input.value;
+        const price = row.querySelector('.price-input').value;
+        row.querySelector('.sub-input').value = (cant * price).toFixed(2);
+        calculateTotal();
+    }
+
+    function calculateTotal() {
+        let total = 0;
+        document.querySelectorAll('.sub-input').forEach(input => {
+            total += parseFloat(input.value || 0);
+        });
+        document.getElementById('total-venta').innerText = '$' + total.toLocaleString('en-US', {minimumFractionDigits: 2});
+    }
+
+    function addRow() {
+        const tbody = document.getElementById('detalle-body');
+        const newRow = tbody.rows[0].cloneNode(true);
+        newRow.querySelectorAll('input').forEach(i => i.value = i.defaultValue);
+        newRow.querySelector('select').selectedIndex = 0;
+        
+        // Add delete button
+        const delTd = newRow.cells[4];
+        delTd.innerHTML = '<button type="button" class="btn btn-danger" style="padding: 4px 8px;" onclick="this.closest(\'tr\').remove(); calculateTotal();"><i class="fas fa-trash"></i></button>';
+        
+        tbody.appendChild(newRow);
+    }
+</script>
 {% endblock %}
