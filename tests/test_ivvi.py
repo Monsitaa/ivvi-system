@@ -15,12 +15,14 @@ class IvviTest(unittest.TestCase):
         with self.app.app_context():
             db.create_all()
             # Semillas básicas para pruebas
-            self.cat = Categoria(nombre="Aceites")
-            self.uni = UnidadMedida(nombre="Galones", abreviatura="gal")
-            db.session.add_all([self.cat, self.uni])
+            cat = Categoria(nombre="Aceites")
+            uni = UnidadMedida(nombre="Galones", abreviatura="gal")
+            db.session.add_all([cat, uni])
             db.session.commit()
-            db.session.refresh(self.cat)
-            db.session.refresh(self.uni)
+            
+            # Almacenamos solo los IDs para evitar problemas de sesión (DetachedInstanceError)
+            self.cat_id = cat.id
+            self.uni_id = uni.id
 
     def tearDown(self):
         with self.app.app_context():
@@ -33,8 +35,8 @@ class IvviTest(unittest.TestCase):
             p = Producto(
                 sku="PROD-001", 
                 nombre="Aceite de Palma", 
-                categoria_id=self.cat.id,
-                unidad_id=self.uni.id,
+                categoria_id=self.cat_id,
+                unidad_id=self.uni_id,
                 stock_actual=10,
                 stock_minimo=5
             )
@@ -93,6 +95,61 @@ class IvviTest(unittest.TestCase):
             mov = Kardex.query.filter_by(documento_id="C-001").first()
             self.assertIsNotNone(mov)
             self.assertEqual(mov.tipo_movimiento, "ENTRADA")
+
+    def test_conversion_industrial_tm_l(self):
+        """ Prueba 5: Conversión Industrial (TM a L) """
+        with self.app.app_context():
+            p_bulk = Producto(sku="O-BULK", nombre="Aceite Bulk", factor_conversion=1100.0, stock_actual=0)
+            u = Usuario(nombre="Logistica", rol="Operador", password="123", email="log@ivvi.com")
+            db.session.add_all([p_bulk, u])
+            db.session.commit()
+            
+            # Compramos 2 TM. El stock debe subir 2200 Litros.
+            cantidad_tm = 2.0
+            InventarioService.registrar_entrada(p_bulk.id, cantidad_tm * p_bulk.factor_conversion, "COMPRA-TM", u.id)
+            
+            p_updated = Producto.query.filter_by(sku="O-BULK").first()
+            self.assertEqual(p_updated.stock_actual, 2200)
+
+    def test_envasado_atomico(self):
+        """ Prueba 6: Producción/Envasado Atómico (Descuento Doble) """
+        with self.app.app_context():
+            # Mock de datos para producción (Fruto Dorado 19L)
+            p_oil = Producto(sku="ACE-EST-BULK", nombre="Aceite Est", stock_actual=100)
+            p_env = Producto(sku="BID-VACIO-19L", nombre="Bidon", stock_actual=10)
+            p_pt  = Producto(sku="PRO-EST-19L", nombre="PT 19L", stock_actual=0)
+            u = Usuario(nombre="Planta", rol="Administrador", password="1", email="p@ivvi.com")
+            db.session.add_all([p_oil, p_env, p_pt, u])
+            db.session.commit()
+            
+            # Producir 2 bidones de 19L
+            # Debe descontar 38L de aceite y 2 bidones vacios. Debe sumar 2 PT.
+            success, msg = InventarioService.registrar_produccion("ESTANDAR-19L", 2, u.id)
+            
+            p_oil_up = Producto.query.filter_by(sku="ACE-EST-BULK").first()
+            p_env_up = Producto.query.filter_by(sku="BID-VACIO-19L").first()
+            p_pt_up  = Producto.query.filter_by(sku="PRO-EST-19L").first()
+            
+            self.assertTrue(success)
+            self.assertEqual(p_oil_up.stock_actual, 100 - 38)
+            self.assertEqual(p_env_up.stock_actual, 10 - 2)
+            self.assertEqual(p_pt_up.stock_actual, 2)
+
+    def test_integridad_referencial_kardex(self):
+        """ Prueba 7: Integridad y Autoría del Kárdex """
+        with self.app.app_context():
+            p = Producto(sku="P-AUTH", nombre="P", stock_actual=10)
+            u = Usuario(nombre="Auditor", rol="Administrador", password="1", email="a@ivvi.com")
+            db.session.add_all([p, u])
+            db.session.commit()
+            
+            InventarioService.registrar_salida(p.id, 1, "DOC-AUDIT", u.id, "Muestra de calidad")
+            
+            from models import Kardex
+            mov = Kardex.query.filter_by(documento_id="DOC-AUDIT").first()
+            # Validar que el movimiento esté amarrado a un usuario real
+            self.assertEqual(mov.usuario.nombre, "Auditor")
+            self.assertEqual(mov.producto.sku, "P-AUTH")
 
 if __name__ == '__main__':
     unittest.main()

@@ -3,6 +3,14 @@ from datetime import datetime
 
 # --- BASE DE DATOS Y POO ---
 
+class ConfiguracionGlobal(db.Model):
+    """ PARAMETROS CENTRALES DEL SISTEMA """
+    __tablename__ = 'configuracion_global'
+    id = db.Column(db.Integer, primary_key=True)
+    nombre_empresa = db.Column(db.String(150), default='IVVI S.A.')
+    ruc = db.Column(db.String(50), default='1790045623001')
+    tasa_cambio = db.Column(db.Float, default=36.00)
+
 class Persona(db.Model):
     """
     CLASE BASE (Abstracción e Herencia)
@@ -121,10 +129,15 @@ class Producto(db.Model):
     unidad_id = db.Column(db.Integer, db.ForeignKey('unidades_medida.id'))
     precio_venta = db.Column(db.Float, default=0.0)
     stock_minimo = db.Column(db.Integer, default=5)
+    factor_conversion = db.Column(db.Float, default=1.0) # Cuántas uds inventario por 1 ud compra
     estado = db.Column(db.String(20), default='Activo')
     
     # Campo calculado o centralizado
     stock_actual = db.Column(db.Integer, default=0)
+
+    # Relaciones
+    categoria = db.relationship('Categoria', backref='productos', lazy=True)
+    unidad = db.relationship('UnidadMedida', backref='productos', lazy=True)
 
     def validar_stock(self, cantidad):
         """ Encapsula la validación de disponibilidad """
@@ -144,8 +157,17 @@ class Compra(db.Model):
     numero_factura = db.Column(db.String(50))
     bodega_id = db.Column(db.Integer, db.ForeignKey('bodegas.id'))
     observaciones = db.Column(db.Text)
-    total = db.Column(db.Float, default=0.0)
+    
+    # Manejo Multimoneda
+    moneda = db.Column(db.String(3), default='NIO')
+    tasa_cambio = db.Column(db.Float, default=1.0)
+    total = db.Column(db.Float, default=0.0) # Total expresado en la moneda original de transacción
+    total_base = db.Column(db.Float, default=0.0) # Total normalizado forzosamente a la moneda principal de la compañía (NIO)
+    estado = db.Column(db.String(20), default='Completada') # Completada, Anulada
 
+    # Relaciones
+    proveedor = db.relationship('Proveedor', backref='compras', lazy=True)
+    bodega = db.relationship('Bodega', backref='compras', lazy=True)
     detalles = db.relationship('DetalleCompra', backref='compra', lazy=True, cascade="all, delete-orphan")
 
 class DetalleCompra(db.Model):
@@ -158,6 +180,9 @@ class DetalleCompra(db.Model):
     costo_unitario = db.Column(db.Float, nullable=False)
     subtotal = db.Column(db.Float, nullable=False)
 
+    # Relación
+    producto = db.relationship('Producto', lazy=True)
+
 class Venta(db.Model):
     """ CABECERA DE VENTA """
     __tablename__ = 'ventas'
@@ -168,7 +193,11 @@ class Venta(db.Model):
     numero_factura = db.Column(db.String(50))
     observaciones = db.Column(db.Text)
     total = db.Column(db.Float, default=0.0)
+    estado = db.Column(db.String(20), default='Completada') # Completada, Anulada
 
+    # Relaciones
+    cliente = db.relationship('Cliente', backref='ventas', lazy=True)
+    usuario = db.relationship('Usuario', backref='ventas', lazy=True)
     detalles = db.relationship('DetalleVenta', backref='venta', lazy=True, cascade="all, delete-orphan")
 
 class DetalleVenta(db.Model):
@@ -183,6 +212,9 @@ class DetalleVenta(db.Model):
     impuesto = db.Column(db.Float, default=0.0)
     subtotal = db.Column(db.Float, nullable=False)
 
+    # Relación
+    producto = db.relationship('Producto', lazy=True)
+
 # --- KARDEX ---
 
 class Kardex(db.Model):
@@ -196,6 +228,10 @@ class Kardex(db.Model):
     cantidad = db.Column(db.Integer, nullable=False)
     usuario_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'))
     observacion = db.Column(db.String(250))
+
+    # Relaciones
+    producto = db.relationship('Producto', lazy=True)
+    usuario = db.relationship('Usuario', lazy=True)
 
 # --- LÓGICA DE NEGOCIO (Modularidad) ---
 
@@ -235,4 +271,66 @@ class InventarioService:
             db.session.add(mov)
             return True
         return False
+
+    @staticmethod
+    def registrar_produccion(tipo_combo, cantidad, usuario_id):
+        """
+        Lógica de Envasado Multimarca y Multi-Envase
+        """
+        config = {
+            'ESTANDAR-19L': {
+                'sku_oil': 'ACE-EST-BULK', 
+                'sku_envase': 'BID-VACIO-19L', 
+                'sku_final': 'PRO-EST-19L',
+                'oil_ratio': 19,
+                'nombre': 'Fruto Dorado 19L'
+            },
+            'PREMIUM-19L': {
+                'sku_oil': 'ACE-PRE-BULK', 
+                'sku_envase': 'BID-VACIO-19L', 
+                'sku_final': 'PRO-PRE-19L',
+                'oil_ratio': 19,
+                'nombre': 'Divina Providencia 19L'
+            },
+            'PREMIUM-2.5G': {
+                'sku_oil': 'ACE-PRE-BULK', 
+                'sku_envase': 'BOT-VACIA-2.5G', 
+                'sku_final': 'PRO-PRE-2.5G',
+                'oil_ratio': 9.5,
+                'nombre': 'Divina Providencia 2.5 Gal'
+            }
+        }
+
+        if tipo_combo not in config:
+            return False, "Error: Tipo de producción no reconocido."
+        
+        c = config[tipo_combo]
+        p_bulk = Producto.query.filter_by(sku=c['sku_oil']).first()
+        p_envase = Producto.query.filter_by(sku=c['sku_envase']).first()
+        p_final = Producto.query.filter_by(sku=c['sku_final']).first()
+
+        if not p_bulk or not p_envase or not p_final:
+            return False, "Error: Configuración de productos (SKUs) no encontrada en catálogo."
+
+        oil_total = cantidad * c['oil_ratio']
+
+        # Validaciones
+        if p_bulk.stock_actual < oil_total:
+            return False, f"Stock insuficiente de Aceite Bulk: Se requieren {oil_total}L."
+        if p_envase.stock_actual < cantidad:
+            return False, f"Stock insuficiente de Envases Vacíos: Se requieren {cantidad} UND."
+
+        # Transacción
+        doc = f"PLANTA-{tipo_combo}-{datetime.now().strftime('%m%d%H%M')}"
+        
+        # 1. Salida ACEITE
+        InventarioService.registrar_salida(p_bulk.id, oil_total, doc, usuario_id, f"Consumo envasado {c['nombre']}")
+        
+        # 2. Salida ENVASE
+        InventarioService.registrar_salida(p_envase.id, cantidad, doc, usuario_id, f"Envases usados para {c['nombre']}")
+        
+        # 3. Entrada FINAL
+        InventarioService.registrar_entrada(p_final.id, cantidad, doc, usuario_id, f"Producción terminada {c['nombre']}")
+
+        return True, f"Orden de producción completada: {cantidad} unidades de {c['nombre']}."
 

@@ -14,6 +14,7 @@ venv.bak/
 # SQLite Database
 *.sqlite3
 database.db
+ivvi.db
 
 # Python
 __pycache__/
