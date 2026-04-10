@@ -2,13 +2,15 @@
 
 Bienvenido a la documentación oficial del sistema **IVVI**, una plataforma administrativa de alto nivel diseñada para automatizar y centralizar la gestión de compras, ventas e inventario.
 
-## 📂 Estructura de Documentación
-Para facilitar la comprensión del sistema, hemos dividido la información en tres pilares:
+## 📂 Estructura de Documentación Maestra (6 Volúmenes)
+Para la defensa técnica y auditoría del sistema, se ha generado una suite documental de alto nivel académico:
 
-1.  **[Guía de Inicio Rápido](#guía-de-inicio-rápido)**: Cómo poner en marcha el sistema.
-2.  **[Manual de Usuario](./documentacion/manual_usuario.md)**: Guía operativa para Administradores, Vendedores y Operadores.
-3.  **[Informe Técnico](./documentacion/informe_tecnico.md)**: Detalle profundo sobre POO, Ingeniería de Software y Base de Datos.
-4.  **[Requerimientos Originales](./documentacion/prompt_maestro_ivvi.md)**: El prompt que dio origen a la transformación del sistema.
+1.  **[V1: Distribución del Sistema](./documentacion/1.md)**: Arquitectura de capas y estructura modular.
+2.  **[V2: Principios SOLID](./documentacion/2.md)**: Implementación técnica de los 5 principios.
+3.  **[V3: Ingeniería de Software](./documentacion/3.md)**: Ciclo de vida (SDLC) y justificación industrial.
+4.  **[V4: Base de Datos](./documentacion/4.md)**: Modelado relacional y explicación técnica/natural.
+5.  **[V5: Pruebas Unitarias](./documentacion/5.md)**: Estrategia de QA y matriz de 7 escenarios críticos.
+6.  **[V6: Seguridad y Auditoría](./documentacion/6.md)**: Control de acceso (RBAC) y trazabilidad forense.
 
 ---
 
