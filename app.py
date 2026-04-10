@@ -424,7 +424,13 @@ def kardex():
 @role_required('Administrador', 'Operador de Almacén')
 def ajuste_inventario():
     if request.method == 'POST':
-        producto_id = int(request.form['producto_id'])
+        # Validación robusta de producto_id
+        raw_id = request.form.get('producto_id')
+        if not raw_id:
+            flash('Error: Debe seleccionar un producto válido.', 'error')
+            return redirect(url_for('ajuste_inventario'))
+            
+        producto_id = int(raw_id)
         tipo = request.form['tipo_movimiento']
         cantidad = int(request.form['cantidad'])
         obs = request.form['observacion']
@@ -442,13 +448,11 @@ def ajuste_inventario():
         db.session.commit()
         return redirect(url_for('ajuste_inventario'))
         
-    # Mostrar envases vacíos (Bidones 19L y Botellas 2.5G)
-    prods = Producto.query.join(Categoria).filter(
-        Categoria.nombre == 'Insumos y Envases',
-        db.or_(Producto.nombre.like('%Bidón%'), Producto.nombre.like('%Botella%'))
-    ).all()
+    # Buscar el bidón de 19L específico para el ajuste fijo
+    bidon_obj = Producto.query.filter(Producto.nombre.like('%Bidón 19L%')).first()
+    
     ajustes = Kardex.query.filter_by(documento_id='AJUSTE-MANUAL').order_by(Kardex.fecha.desc()).limit(10).all()
-    return render_template('ajuste_inventario.html', productos=prods, ajustes_recientes=ajustes)
+    return render_template('ajuste_inventario.html', bidon=bidon_obj, ajustes_recientes=ajustes)
 
 @app.route('/produccion/envasado', methods=['GET', 'POST'])
 @login_required

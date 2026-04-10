@@ -52,4 +52,4 @@ python -m unittest tests/test_ivvi.py
 
 ---
 
-*Desarrollado para IVVI S.A. - Transformación Digital del Agro.*
+*Desarrollado para Inversiones IVVI S.A. - Transformación Digital del Agro.*
