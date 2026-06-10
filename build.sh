@@ -10,3 +10,7 @@ cd frontend
 npm install
 npm run build
 cd ..
+
+# Poblar la base de datos con datos de prueba/semilla para la defensa
+python seed_data.py
+
