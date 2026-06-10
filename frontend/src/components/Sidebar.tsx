@@ -15,7 +15,8 @@ import {
   Moon, 
   UserCircle,
   Settings2,
-  History
+  History,
+  X
 } from 'lucide-react';
 import type { Usuario } from '../types';
 
@@ -26,6 +27,8 @@ interface SidebarProps {
   darkMode: boolean;
   onToggleDarkMode: () => void;
   onLogout: () => void;
+  isOpen: boolean;
+  onClose: () => void;
 }
 
 export default function Sidebar({
@@ -35,6 +38,8 @@ export default function Sidebar({
   darkMode,
   onToggleDarkMode,
   onLogout,
+  isOpen,
+  onClose
 }: SidebarProps) {
   const menuItems = [
     { id: 'dashboard', name: 'Dashboard Maestro', icon: LayoutDashboard, roles: ['Administrador', 'Vendedor', 'Operador de Almacén', 'Gerencia'] },
@@ -66,10 +71,19 @@ export default function Sidebar({
   });
 
   return (
-    <aside className="w-64 shrink-0 flex flex-col h-screen sticky top-0 bg-gradient-to-b from-ivvi-teal-dark to-slate-900 border-r border-white/5 text-white">
+    <aside className={`fixed md:sticky top-0 bottom-0 left-0 z-40 w-64 shrink-0 flex flex-col h-screen bg-gradient-to-b from-ivvi-teal-dark to-slate-900 border-r border-white/5 text-white transition-transform duration-300 md:translate-x-0 ${
+      isOpen ? 'translate-x-0' : '-translate-x-full'
+    }`}>
       {/* Header Brand */}
-      <div className="p-4 border-b border-white/10 flex justify-center bg-slate-900/50">
-        <img src="/logo_transparent.png" alt="Inversiones IVVI S.A." className="h-20 w-auto object-contain" />
+      <div className="p-4 border-b border-white/10 flex justify-between items-center bg-slate-900/50">
+        <img src="/logo_transparent.png" alt="Inversiones IVVI S.A." className="h-20 w-auto object-contain mx-auto" />
+        <button 
+          onClick={onClose} 
+          className="md:hidden p-1.5 hover:bg-white/5 rounded-lg text-slate-400 hover:text-white cursor-pointer"
+          title="Cerrar Menú"
+        >
+          <X size={18} />
+        </button>
       </div>
       {/* Menu Navigation */}
       <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
