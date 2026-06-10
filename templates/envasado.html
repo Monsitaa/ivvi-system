@@ -10,54 +10,74 @@
     </div>
 </div>
 
-<div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 2.5rem;">
+<div class="row g-4">
     <!-- Formulario de Producción -->
-    <div class="card">
-        <h3><i class="fas fa-industry" style="color: var(--verde-secundario);"></i> Iniciar Llenado de Bidones</h3>
-        <form action="{{ url_for('envasado') }}" method="POST" id="form-envasado">
-            <div class="form-group" style="margin-bottom: 1.5rem;">
-                <label><i class="fas fa-box-open"></i> Producto a Envasar (Marca y Presentación)</label>
-                <select name="tipo_combo" id="tipo_combo" required style="font-size: 1.1rem; height: 50px; border-radius: 8px; border: 1px solid var(--gris-claro); width: 100%; padding: 0 1rem;">
-                    <option value="ESTANDAR-19L">Fruto Dorado - Bidón 19L (Aceite Estándar)</option>
-                    <option value="PREMIUM-19L">Divina Providencia - Bidón 19L (Aceite Premium)</option>
-                    <option value="PREMIUM-2.5G">Divina Providencia - Botella 2.5 Gal (Aceite Premium)</option>
-                </select>
-            </div>
+    <div class="col-lg-7">
+        <div class="card h-100">
+            <h3><i class="fas fa-industry" style="color: var(--verde-secundario);"></i> Iniciar Llenado de Bidones</h3>
+            <form action="{{ url_for('envasado') }}" method="POST" id="form-envasado">
+                <div class="form-group mb-4">
+                    <label><i class="fas fa-box-open"></i> Producto a Envasar (Marca y Presentación)</label>
+                    <select name="tipo_combo" id="tipo_combo" required class="form-select" style="font-size: 1.1rem; height: 50px;">
+                        {% for r in recetas %}
+                        <option value="{{ r.codigo }}" data-ratio="{{ r.litros_aceite }}">{{ r.nombre }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
 
-            <div class="form-group" style="margin-bottom: 2rem;">
-                <label><i class="fas fa-hashtag"></i> Unidades a Producir</label>
-                <input type="number" name="cantidad" id="input-cantidad" min="1" required placeholder="Ej: 100" 
-                       style="font-size: 1.5rem; height: 60px; text-align: center; font-weight: 800; border: 2px solid var(--verde-suave);">
-            </div>
+                <div class="form-group mb-4">
+                    <label><i class="fas fa-hashtag"></i> Unidades a Producir</label>
+                    <input type="number" name="cantidad" id="input-cantidad" min="1" required placeholder="Ej: 100" class="form-control"
+                           style="font-size: 1.5rem; height: 60px; text-align: center; font-weight: 800; border: 2px solid var(--verde-suave);">
+                </div>
 
-            <!-- Simulador de Consumo (Premium) -->
-            <div class="simulator-card" style="background: var(--verde-suave); padding: 1.5rem; border-radius: 16px; border: 1px solid var(--verde-secundario); margin-bottom: 2rem;">
-                <h4 style="color: var(--verde-premium); margin-bottom: 1rem; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;">
-                    <i class="fas fa-microchip"></i> Simulación de Insumos (Automática)
-                </h4>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                    <div style="background: white; padding: 1rem; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
-                        <span style="display: block; font-size: 0.75rem; color: var(--gris-medio);">Aceite Bulk Requerido</span>
-                        <strong id="sim-aceite" style="font-size: 1.2rem; color: var(--negro-profundo);">0</strong> 
-                        <span style="font-size: 0.8rem; color: var(--gris-medio);">Litros</span>
+                <!-- Descartes y Mermas en Planta -->
+                <div class="row g-3 mb-4">
+                    <div class="col-6 form-group">
+                        <label><i class="fas fa-tint-slash" style="color: #f59e0b;"></i> Merma Aceite (L)</label>
+                        <input type="number" name="merma_aceite" id="input-merma-aceite" min="0" value="0" placeholder="0" class="form-control"
+                               style="height: 45px; text-align: center; font-weight: 600;">
                     </div>
-                    <div style="background: white; padding: 1rem; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
-                        <span style="display: block; font-size: 0.75rem; color: var(--gris-medio);">Bidones Vacíos Requeridos</span>
-                        <strong id="sim-vacios" style="font-size: 1.2rem; color: var(--negro-profundo);">0</strong>
-                        <span style="font-size: 0.8rem; color: var(--gris-medio);">Unidades</span>
+                    <div class="col-6 form-group">
+                        <label><i class="fas fa-trash-alt" style="color: #ef4444;"></i> Envases Dañados (U)</label>
+                        <input type="number" name="merma_envase" id="input-merma-envase" min="0" value="0" placeholder="0" class="form-control"
+                               style="height: 45px; text-align: center; font-weight: 600;">
                     </div>
                 </div>
-            </div>
 
-            <button type="submit" class="btn btn-primary" style="width: 100%; height: 55px; font-size: 1.1rem; border-radius: 14px;">
-                <i class="fas fa-vial-circle-check"></i> Procesar Llenado y Actualizar Inventario
-            </button>
-        </form>
+                <!-- Simulador de Consumo (Premium) -->
+                <div class="simulator-card mb-4" style="background: var(--verde-suave); padding: 1.5rem; border-radius: 16px; border: 1px solid var(--verde-secundario);">
+                    <h4 style="color: var(--verde-premium); margin-bottom: 1rem; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;">
+                        <i class="fas fa-microchip"></i> Simulación de Insumos (Automática)
+                    </h4>
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <div class="p-3 bg-white rounded-3 shadow-sm text-center">
+                                <span style="display: block; font-size: 0.75rem; color: var(--gris-medio);">Aceite Bulk Requerido</span>
+                                <strong id="sim-aceite" style="font-size: 1.2rem; color: var(--negro-profundo);">0</strong> 
+                                <span style="font-size: 0.8rem; color: var(--gris-medio);">Litros</span>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="p-3 bg-white rounded-3 shadow-sm text-center">
+                                <span style="display: block; font-size: 0.75rem; color: var(--gris-medio);">Bidones Vacíos Requeridos</span>
+                                <strong id="sim-vacios" style="font-size: 1.2rem; color: var(--negro-profundo);">0</strong>
+                                <span style="font-size: 0.8rem; color: var(--gris-medio);">Unidades</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%; height: 55px; font-size: 1.1rem; border-radius: 14px;">
+                    <i class="fas fa-vial-circle-check"></i> Procesar Llenado y Actualizar Inventario
+                </button>
+            </form>
+        </div>
     </div>
 
     <!-- Panel de Inventario en Tiempo Real -->
-    <div style="display: flex; flex-direction: column; gap: 1.5rem;">
-        <div class="card" style="border-left: 5px solid var(--verde-premium);">
+    <div class="col-lg-5 d-flex flex-column gap-4">
+        <div class="card h-100 mb-0" style="border-left: 5px solid var(--verde-premium);">
             <h3><i class="fas fa-microscope"></i> Tanques y Cajas</h3>
             <div style="display: flex; flex-direction: column; gap: 15px; margin-top: 1rem;">
                 <strong style="color: var(--gris-oscuro); font-size: 0.8rem; text-transform: uppercase;">Materia Prima (Bulk)</strong>
@@ -96,7 +116,7 @@
         </div>
 
         <!-- Historial Reciente de Planta -->
-        <div class="card">
+        <div class="card mb-0">
             <h3><i class="fas fa-clock-rotate-left"></i> Turnos de Llenado Recientes</h3>
             <div class="table-container" style="max-height: 250px;">
                 <table style="font-size: 0.85rem;">
@@ -135,8 +155,8 @@
 
     function actualizarSimulador() {
         const cant = parseInt(inputCant.value) || 0;
-        const combo = selectCombo.value;
-        const ratio = (combo === 'PREMIUM-2.5G') ? 9.5 : 19;
+        const selectedOpt = selectCombo.options[selectCombo.selectedIndex];
+        const ratio = selectedOpt ? (parseFloat(selectedOpt.dataset.ratio) || 0) : 0;
         
         simAceite.innerText = (cant * ratio).toLocaleString(undefined, {minimumFractionDigits: 1, maximumFractionDigits: 1});
         simVacios.innerText = cant.toLocaleString();

@@ -22,6 +22,22 @@
     --gris-medio: #6b7280;
     --gris-claro: #f3f4f6;
     --blanco-glass: rgba(255, 255, 255, 0.7);
+
+    /* Mapeo de Variables Bootstrap 5 */
+    --bs-primary: var(--verde-primario);
+    --bs-primary-rgb: 1, 92, 59;
+    --bs-success: var(--verde-secundario);
+    --bs-success-rgb: 5, 150, 105;
+    --bs-danger: var(--rojo-error);
+    --bs-danger-rgb: 239, 68, 68;
+    --bs-warning: var(--naranja-ivvi);
+    --bs-warning-rgb: 245, 158, 11;
+    --bs-body-bg: var(--bg-primary);
+    --bs-body-color: var(--text-main);
+    --bs-border-color: var(--border-color);
+    --bs-link-color: var(--verde-secundario);
+    --bs-link-hover-color: var(--verde-premium);
+    --bs-font-sans-serif: 'Inter', sans-serif;
 }
 
 :root[data-theme="dark"] {
@@ -48,13 +64,30 @@
     --gris-medio: #64748b;
     --gris-claro: #1e293b;
     --blanco-glass: rgba(30, 41, 59, 0.7);
+
+    /* Mapeo de Variables Bootstrap 5 */
+    --bs-primary: var(--verde-primario);
+    --bs-primary-rgb: 5, 150, 105;
+    --bs-success: var(--verde-secundario);
+    --bs-success-rgb: 52, 211, 153;
+    --bs-danger: var(--rojo-error);
+    --bs-danger-rgb: 248, 113, 113;
+    --bs-warning: var(--naranja-ivvi);
+    --bs-warning-rgb: 251, 191, 36;
+    --bs-body-bg: var(--bg-primary);
+    --bs-body-color: var(--text-main);
+    --bs-border-color: var(--border-color);
+    --bs-link-color: var(--verde-secundario);
+    --bs-link-hover-color: var(--verde-premium);
+    --bs-font-sans-serif: 'Inter', sans-serif;
 }
 
 /* Fallback / Default */
 :root {
     --sidebar-width: 280px;
     --header-height: 80px;
-    --transition-premium: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-premium: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    --transition-fast: 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 * {
@@ -133,11 +166,11 @@ h1, h2, h3, h4 {
 .menu-item {
     display: flex;
     align-items: center;
-    padding: 1rem 1.25rem;
-    color: rgba(255,255,255,0.6);
+    padding: 0.85rem 1.25rem;
+    color: rgba(255, 255, 255, 0.55);
     text-decoration: none;
     transition: all var(--transition-fast);
-    border-radius: 14px;
+    border-radius: 12px;
     margin-bottom: 6px;
     gap: 12px;
     font-weight: 500;
@@ -147,23 +180,37 @@ h1, h2, h3, h4 {
     font-size: 1.2rem;
     width: 24px;
     text-align: center;
-    transition: transform var(--transition-fast);
+    transition: transform var(--transition-fast), color var(--transition-fast);
 }
 
 .menu-item:hover {
-    background: rgba(255,255,255,0.05);
+    background: rgba(255, 255, 255, 0.05);
     color: white;
 }
 
 .menu-item:hover i {
-    transform: scale(1.1);
+    transform: scale(1.1) rotate(5deg);
+    color: var(--verde-premium);
 }
 
 .menu-item.active {
-    background: rgba(5, 150, 105, 0.15);
-    color: #10b981;
-    font-weight: 700;
-    border: 1px solid rgba(16, 185, 129, 0.2);
+    background: linear-gradient(135deg, rgba(20, 184, 166, 0.15), rgba(13, 148, 136, 0.05)) !important;
+    color: var(--verde-premium) !important;
+    font-weight: 700 !important;
+    border: 1px solid rgba(20, 184, 166, 0.2) !important;
+    position: relative;
+}
+
+.menu-item.active::after {
+    content: '';
+    position: absolute;
+    left: 4px;
+    top: 10px;
+    bottom: 10px;
+    width: 4px;
+    background: var(--verde-premium);
+    border-radius: 4px;
+    box-shadow: 0 0 8px var(--verde-premium);
 }
 
 /* Main Content Area */
@@ -225,29 +272,43 @@ h1, h2, h3, h4 {
 /* Premium Glass Cards */
 .card {
     background: var(--bg-card);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border-radius: 28px;
-    padding: 3rem;
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(25px);
+    border-radius: 24px;
+    padding: 2.5rem;
     box-shadow: var(--shadow-main);
-    margin-bottom: 3rem;
+    margin-bottom: 2.5rem;
     border: 1px solid var(--border-color);
-    transition: transform var(--transition-premium), box-shadow var(--transition-premium), background 0.3s ease;
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease;
 }
 
 .card:hover {
     transform: translateY(-4px);
-    box-shadow: 0 20px 40px rgba(0,0,0,0.06);
+    box-shadow: var(--shadow-premium);
+    border-color: rgba(20, 184, 166, 0.25);
 }
 
 .card h3 {
-    margin-bottom: 2.5rem;
+    margin-bottom: 2rem;
     color: var(--verde-premium);
-    font-size: 1.5rem;
+    font-size: 1.4rem;
     font-weight: 800;
     display: flex;
     align-items: center;
     gap: 15px;
+    position: relative;
+    padding-left: 15px;
+}
+
+.card h3::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 4px;
+    bottom: 4px;
+    width: 4px;
+    background: linear-gradient(180deg, var(--verde-primario), var(--verde-premium));
+    border-radius: 4px;
 }
 
 /* Inputs Premium Industrial */
@@ -405,40 +466,92 @@ tr:hover td { background-color: var(--bg-primary); opacity: 0.9; }
 }
 
 .kpi-card {
-    padding: 3rem 2.5rem;
-    border-radius: 32px;
-    color: white;
+    padding: 2.5rem 2rem;
+    border-radius: 24px;
+    color: var(--text-main);
     position: relative;
     overflow: hidden;
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease;
+    box-shadow: var(--shadow-main);
+}
+
+.kpi-card:hover {
+    transform: translateY(-6px);
     box-shadow: var(--shadow-premium);
+    border-color: rgba(20, 184, 166, 0.25);
 }
 
-.kpi-card:hover { 
-    transform: translateY(-8px) scale(1.02);
+/* Backlight glowing circles for cards */
+.kpi-card::before {
+    content: '';
+    position: absolute;
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.15;
+    top: -20px;
+    right: -20px;
+    transition: opacity 0.3s ease, transform 0.4s ease;
+    z-index: 0;
 }
 
-.kpi-card.primary { background: linear-gradient(135deg, #064e3b, #059669); }
-.kpi-card.success { background: linear-gradient(135deg, #059669, #34d399); }
-.kpi-card.accent { background: linear-gradient(135deg, #d97706, #f59e0b); }
-.kpi-card.secondary { background: linear-gradient(135deg, #0f172a, #334155); }
+.kpi-card:hover::before {
+    opacity: 0.3;
+    transform: scale(1.2);
+}
+
+.kpi-card.primary::before { background: var(--verde-premium); }
+.kpi-card.success::before { background: var(--verde-secundario); }
+.kpi-card.accent::before { background: var(--naranja-ivvi); }
+.kpi-card.secondary::before { background: #6366f1; }
 
 .kpi-icon {
-    font-size: 3.5rem;
-    margin-bottom: 1.5rem;
-    opacity: 0.9;
+    font-size: 2.5rem;
+    margin-bottom: 1.25rem;
+    display: inline-flex;
+    position: relative;
+    z-index: 1;
 }
 
-.kpi-value { font-size: 3rem; font-weight: 800; margin: 0.5rem 0; letter-spacing: -2px; }
-.kpi-label { font-size: 1.1rem; font-weight: 600; opacity: 0.8; text-transform: uppercase; letter-spacing: 0.05em; }
+.kpi-card.primary .kpi-icon { color: var(--verde-premium); }
+.kpi-card.success .kpi-icon { color: var(--verde-secundario); }
+.kpi-card.accent .kpi-icon { color: var(--naranja-ivvi); }
+.kpi-card.secondary .kpi-icon { color: #6366f1; }
+
+.kpi-value { 
+    font-size: 2.5rem; 
+    font-weight: 900; 
+    margin: 0.5rem 0; 
+    letter-spacing: -1px; 
+    color: var(--text-main);
+    position: relative;
+    z-index: 1;
+}
+
+.kpi-label { 
+    font-size: 0.85rem; 
+    font-weight: 700; 
+    color: var(--text-muted); 
+    text-transform: uppercase; 
+    letter-spacing: 0.05em; 
+    position: relative;
+    z-index: 1;
+}
 
 .kpi-bg {
     position: absolute;
-    right: -20px;
-    bottom: -20px;
-    font-size: 10rem;
-    opacity: 0.1;
-    transform: rotate(-15deg);
+    right: -10px;
+    bottom: -10px;
+    font-size: 8rem;
+    opacity: 0.03;
+    transform: rotate(-10deg);
+    color: var(--text-main);
+    z-index: 0;
+    pointer-events: none;
+    transition: transform 0.4s ease;
 }
 
 /* Modals y Overlays */
@@ -483,3 +596,144 @@ tr:hover td { background-color: var(--bg-primary); opacity: 0.9; }
 ::-webkit-scrollbar-track { background: #f1f5f9; }
 ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; border: 3px solid #f1f5f9; }
 ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+/* --- ANIMACIONES Y ESTILOS DE TOAST FLOTANTE --- */
+@keyframes slideInToast {
+    0% { transform: translateX(120%) scale(0.9); opacity: 0; }
+    100% { transform: translateX(0) scale(1); opacity: 1; }
+}
+@keyframes fadeOutToast {
+    0% { transform: translateX(0) scale(1); opacity: 1; }
+    100% { transform: translateX(120%) scale(0.9); opacity: 0; }
+}
+
+.toast-message {
+    padding: 1.2rem 1.8rem;
+    border-radius: 20px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.12);
+    background: var(--bg-card);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    animation: slideInToast 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    min-width: 320px;
+    max-width: 450px;
+    transition: all 0.3s ease;
+}
+
+.toast-success {
+    border: 1px solid rgba(34, 197, 94, 0.2);
+    color: #22c55e;
+}
+.toast-error {
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+}
+
+/* --- OVERRIDES GLOBALES DE BOOTSTRAP PARA DISEÑO PREMIUM --- */
+
+/* Impedir subrayados por defecto en links */
+a {
+    text-decoration: none !important;
+}
+
+/* Sobrescribir botones para mantener nuestro degradado y sombreado premium */
+.btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 1rem 2rem !important;
+    border-radius: 16px !important;
+    font-weight: 800 !important;
+    font-size: 1rem !important;
+    cursor: pointer !important;
+    transition: all var(--transition-premium) !important;
+    border: none !important;
+    text-decoration: none !important;
+    gap: 12px !important;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--verde-primario), var(--verde-premium)) !important;
+    color: white !important;
+    box-shadow: 0 10px 25px rgba(1, 92, 59, 0.2) !important;
+}
+
+.btn-primary:hover {
+    transform: scale(1.02) !important;
+    box-shadow: 0 15px 35px rgba(1, 92, 59, 0.3) !important;
+    filter: brightness(1.2) !important;
+}
+
+.btn-secondary {
+    background: var(--bg-primary) !important;
+    color: var(--text-main) !important;
+    border: 1px solid var(--border-color) !important;
+}
+
+.btn-secondary:hover {
+    background: var(--border-color) !important;
+    color: var(--text-main) !important;
+}
+
+/* Evitar que las tarjetas de Bootstrap pierdan nuestro estilo de vidrio esmerilado */
+.card {
+    background: var(--bg-card) !important;
+    backdrop-filter: blur(16px) !important;
+    -webkit-backdrop-filter: blur(16px) !important;
+    border-radius: 28px !important;
+    padding: 3rem !important;
+    box-shadow: var(--shadow-main) !important;
+    border: 1px solid var(--border-color) !important;
+    transition: transform var(--transition-premium), box-shadow var(--transition-premium), background 0.3s ease !important;
+    margin-bottom: 3rem !important;
+}
+
+.card:hover {
+    transform: translateY(-4px) !important;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.06) !important;
+}
+
+/* Estilos para que los inputs y selects de Bootstrap coincidan con nuestro tema industrial */
+.form-control, .form-select {
+    padding: 1rem 1.25rem !important;
+    border: 2px solid var(--border-color) !important;
+    border-radius: 16px !important;
+    font-family: 'Inter', sans-serif !important;
+    font-size: 1rem !important;
+    background-color: var(--bg-card) !important;
+    color: var(--text-main) !important;
+    transition: all var(--transition-fast) !important;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: var(--verde-secundario) !important;
+    box-shadow: 0 0 0 4px var(--verde-suave) !important;
+    background-color: var(--bg-card) !important;
+    color: var(--text-main) !important;
+}
+
+/* Ajustes de compatibilidad con modales de Bootstrap */
+.modal-content {
+    background: var(--bg-card) !important;
+    backdrop-filter: blur(25px) !important;
+    -webkit-backdrop-filter: blur(25px) !important;
+    border-radius: 28px !important;
+    border: 1px solid var(--border-color) !important;
+    color: var(--text-main) !important;
+}
+
+.modal-header, .modal-footer {
+    border-color: var(--border-color) !important;
+}
+
+/* Formulario compacto para celdas de tabla */
+td .form-control, td .form-select, .form-control-sm, .form-select-sm {
+    padding: 0.5rem 0.75rem !important;
+    border-radius: 10px !important;
+    font-size: 0.9rem !important;
+}
+

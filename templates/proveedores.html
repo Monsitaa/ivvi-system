@@ -66,7 +66,11 @@
                 <tr>
                     <td>
                         <strong style="color: var(--verde-premium); font-size: 1.1rem; display: block;">{{ item.razon_social }}</strong>
+                        {% if item.estado == 'Activo' %}
                         <span style="font-size: 0.8rem; color: var(--gris-medio);"><i class="fas fa-calendar-check"></i> Activo en Catálogo</span>
+                        {% else %}
+                        <span style="font-size: 0.8rem; color: var(--rojo-error);"><i class="fas fa-calendar-times"></i> Inactivo en Catálogo</span>
+                        {% endif %}
                     </td>
                     <td>
                         <span class="badge" style="background: var(--bg-primary); color: var(--text-main); border: 1px solid var(--border-color); font-family: monospace;">
@@ -84,7 +88,11 @@
                         </div>
                     </td>
                     <td>
-                        <span class="badge badge-success">Verificando</span>
+                        {% if item.estado == 'Activo' %}
+                        <span class="badge badge-success">Activo</span>
+                        {% else %}
+                        <span class="badge" style="background: #f1f5f9; color: #64748b;">Inactivo</span>
+                        {% endif %}
                     </td>
                     <td>
                         <div style="display: flex; gap: 8px;">

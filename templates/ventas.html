@@ -19,12 +19,18 @@
         <div class="form-grid" style="grid-template-columns: 1fr;">
             <div class="form-group">
                 <label><i class="fas fa-user-check"></i> Cliente Seleccionado</label>
-                <select name="cliente_id" required>
-                    <option value="" disabled selected>Buscar cliente registrado...</option>
-                    {% for c in clientes %}
-                    <option value="{{ c.id }}">{{ c.nombre }} ({{ c.ruc }})</option>
-                    {% endfor %}
-                </select>
+                <div style="display: flex; gap: 8px;">
+                    <input list="clientes-list" id="cliente-autocomplete" placeholder="Escribe para buscar cliente..." required class="form-control" onchange="syncClienteId(this)" style="flex: 1; padding: 0.7rem 1rem; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-card); color: var(--text-main); font-weight: 600;">
+                    <datalist id="clientes-list">
+                        {% for c in clientes %}
+                        <option data-id="{{ c.id }}" value="{{ c.nombre }} ({{ c.ruc or 'N/A' }})"></option>
+                        {% endfor %}
+                    </datalist>
+                    <input type="hidden" name="cliente_id" id="cliente-id-hidden" required>
+                    <button type="button" class="btn" style="padding: 10px 14px; background: var(--verde-suave); color: var(--verde-premium); border: 1px solid var(--border-color); border-radius: 8px; font-weight: 600; cursor: pointer;" onclick="openClienteExpressModal()" title="Registrar Cliente Rápido">
+                        <i class="fas fa-user-plus"></i> + Nuevo
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -44,22 +50,22 @@
                     <tbody id="detalle-body">
                         <tr>
                             <td>
-                                <select name="producto_id[]" class="prod-select" required onchange="updatePrice(this)" style="padding: 0.7rem 1rem;">
+                                <select name="producto_id[]" class="prod-select form-select" required onchange="updatePrice(this)">
                                     <option value="" selected disabled>Buscar producto...</option>
                                     {% for p in productos %}
                                     <option value="{{ p.id }}" data-price="{{ p.precio_venta }}">{{ p.nombre }} [Stock: {{ p.stock_actual }}]</option>
                                     {% endfor %}
                                 </select>
                             </td>
-                            <td><input type="number" name="cantidad[]" class="cant-input" required min="1" value="1" oninput="calculateRow(this)" style="padding: 0.7rem 1rem;"></td>
+                            <td><input type="number" name="cantidad[]" class="cant-input form-control" required min="1" value="1" oninput="calculateRow(this)"></td>
                             <td>
                                 <div style="position: relative; display: flex; align-items: center;">
-                                    <span style="position: absolute; left: 12px; color: var(--text-muted);">$</span>
-                                    <input type="number" class="price-input" readonly value="0.00" style="padding: 0.7rem 1rem 0.7rem 2rem; background: var(--bg-primary); font-weight: 600; color: var(--text-main); border: 1px solid var(--border-color); border-radius: 8px;">
+                                    <span style="position: absolute; left: 12px; color: var(--text-muted);">C$</span>
+                                    <input type="number" class="price-input form-control" readonly value="0.00" style="padding-left: 2.2rem !important; background: var(--bg-primary); font-weight: 600;">
                                 </div>
                             </td>
                             <td>
-                                <input type="number" class="sub-input" readonly value="0.00" style="padding: 0.7rem 1rem; background: var(--verde-suave); font-weight: 800; color: var(--verde-premium); border: 1px solid var(--verde-suave); border-radius: 8px;">
+                                <input type="number" class="sub-input form-control" readonly value="0.00" style="background: var(--verde-suave); font-weight: 800; color: var(--verde-premium); border-color: var(--verde-suave);">
                             </td>
                             <td></td>
                         </tr>
@@ -74,7 +80,7 @@
             </button>
             <div style="flex: 1; max-width: 400px; background: var(--verde-suave); padding: 2rem; border-radius: 20px; border: 1px solid var(--border-color);">
                 <span style="color: var(--verde-premium); font-weight: 800; font-size: 0.8rem; text-transform: uppercase;">Monto Neto a Facturar</span>
-                <div id="total-venta" style="font-size: 2.8rem; font-weight: 950; color: var(--verde-premium); margin-bottom: 1rem;">$0.00</div>
+                <div id="total-venta" style="font-size: 2.8rem; font-weight: 950; color: var(--verde-premium); margin-bottom: 1rem;">C$0.00</div>
                 <button type="submit" class="btn btn-primary" style="width: 100%; height: 56px; font-size: 1.1rem; background: linear-gradient(135deg, var(--verde-secundario), var(--verde-premium));">
                     <i class="fas fa-check-double"></i> Finalizar Venta (F10)
                 </button>
@@ -165,7 +171,7 @@
         document.querySelectorAll('.sub-input').forEach(input => {
             total += parseFloat(input.value || 0);
         });
-        document.getElementById('total-venta').innerText = '$' + total.toLocaleString('en-US', {minimumFractionDigits: 2});
+        document.getElementById('total-venta').innerText = 'C$' + total.toLocaleString('en-US', {minimumFractionDigits: 2});
     }
 
     function addRow() {
@@ -236,15 +242,15 @@
                                             <small style="color: var(--gris-medio)">${d.sku}</small>
                                         </td>
                                         <td style="text-align: center; padding: 12px;">${d.cantidad} ${d.unidad}</td>
-                                        <td style="text-align: right; padding: 12px;">$ ${parseFloat(d.precio_unitario).toFixed(2)}</td>
-                                        <td style="text-align: right; padding: 12px; font-weight: 700; color: var(--verde-premium);">$ ${parseFloat(d.subtotal).toFixed(2)}</td>
+                                        <td style="text-align: right; padding: 12px;">C$ ${parseFloat(d.precio_unitario).toFixed(2)}</td>
+                                        <td style="text-align: right; padding: 12px; font-weight: 700; color: var(--verde-premium);">C$ ${parseFloat(d.subtotal).toFixed(2)}</td>
                                     </tr>
                                 `).join('')}
                             </tbody>
                         </table>
 
                         <div style="margin-top: 2rem; text-align: right; padding: 1.5rem; background: var(--verde-suave); border-radius: 12px;">
-                            <span style="font-size: 1.1rem; color: var(--verde-premium); font-weight: 800;">TOTAL VENTA: $ ${parseFloat(data.total).toFixed(2)}</span>
+                            <span style="font-size: 1.1rem; color: var(--verde-premium); font-weight: 800;">TOTAL VENTA: C$ ${parseFloat(data.total).toFixed(2)}</span>
                         </div>
                         
                         <div style="margin-top: 2rem; display: flex; gap: 10px; justify-content: flex-end;">
@@ -262,13 +268,113 @@
     }
 
     function editVenta(id) {
-        if (!confirm('Esta acción anulará la venta actual y permitirá registrar una nueva corregida. ¿Continuar?')) return;
+        confirmarAccion('Confirmar Edición', 'Esta acción anulará la venta actual y permitirá registrar una nueva corregida. ¿Continuar?', function() {
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = `/ventas/${id}/anular`;
+            document.body.appendChild(form);
+            form.submit();
+        });
+    }
+
+    // --- MEJORAS ERGONÓMICAS DE EMPLEADO ---
+
+    // Sincronizar el datalist del autocompletado con el campo hidden cliente_id
+    function syncClienteId(input) {
+        const val = input.value;
+        const list = document.getElementById('clientes-list');
+        let selectedId = '';
         
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = `/ventas/${id}/anular`;
-        document.body.appendChild(form);
-        form.submit();
+        for (let i = 0; i < list.options.length; i++) {
+            if (list.options[i].value === val) {
+                selectedId = list.options[i].getAttribute('data-id');
+                break;
+            }
+        }
+        
+        document.getElementById('cliente-id-hidden').value = selectedId;
+    }
+
+    // Abrir Modal de Cliente Express
+    function openClienteExpressModal() {
+        const modalHtml = `
+            <div style="padding: 1.5rem;">
+                <h3 style="color: var(--verde-premium); margin-bottom: 1.5rem; display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-user-plus"></i> Registrar Cliente Express
+                </h3>
+                <form id="cliente-express-form" onsubmit="submitClienteExpress(event)">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+                        <div class="form-group">
+                            <label>Nombre / Razón Social *</label>
+                            <input type="text" id="exp-nombre" required style="width:100%; padding: 0.7rem; border-radius:8px; border:1px solid var(--border-color); background: var(--bg-card); color: var(--text-main);">
+                        </div>
+                        <div class="form-group">
+                            <label>RUC (Opcional)</label>
+                            <input type="text" id="exp-ruc" style="width:100%; padding: 0.7rem; border-radius:8px; border:1px solid var(--border-color); background: var(--bg-card); color: var(--text-main);">
+                        </div>
+                        <div class="form-group">
+                            <label>Teléfono</label>
+                            <input type="text" id="exp-telefono" style="width:100%; padding: 0.7rem; border-radius:8px; border:1px solid var(--border-color); background: var(--bg-card); color: var(--text-main);">
+                        </div>
+                        <div class="form-group">
+                            <label>Correo Electrónico</label>
+                            <input type="email" id="exp-email" style="width:100%; padding: 0.7rem; border-radius:8px; border:1px solid var(--border-color); background: var(--bg-card); color: var(--text-main);">
+                        </div>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 1.5rem;">
+                        <label>Dirección</label>
+                        <textarea id="exp-direccion" rows="2" style="width:100%; padding: 0.7rem; border-radius:8px; border:1px solid var(--border-color); resize: none; background: var(--bg-card); color: var(--text-main);"></textarea>
+                    </div>
+                    <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                        <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancelar</button>
+                        <button type="submit" class="btn btn-primary" style="background: linear-gradient(135deg, var(--verde-secundario), var(--verde-premium));">Registrar Cliente</button>
+                    </div>
+                </form>
+            </div>
+        `;
+        openModal(modalHtml);
+    }
+
+    // Procesar AJAX de Cliente Express
+    function submitClienteExpress(event) {
+        event.preventDefault();
+        
+        const nombre = document.getElementById('exp-nombre').value;
+        const ruc = document.getElementById('exp-ruc').value;
+        const telefono = document.getElementById('exp-telefono').value;
+        const email = document.getElementById('exp-email').value;
+        const direccion = document.getElementById('exp-direccion').value;
+        
+        fetch('/api/clientes/registrar', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ nombre, ruc, telefono, email, direccion })
+        })
+        .then(res => {
+            if (!res.ok) {
+                return res.json().then(err => { throw new Error(err.error || 'Fallo al guardar cliente') });
+            }
+            return res.json();
+        })
+        .then(data => {
+            // Añadir al datalist
+            const datalist = document.getElementById('clientes-list');
+            const newOption = document.createElement('option');
+            newOption.setAttribute('data-id', data.id);
+            newOption.value = `${data.nombre} (${data.ruc})`;
+            datalist.appendChild(newOption);
+            
+            // Auto-seleccionar
+            const autocompleteInput = document.getElementById('cliente-autocomplete');
+            autocompleteInput.value = `${data.nombre} (${data.ruc})`;
+            document.getElementById('cliente-id-hidden').value = data.id;
+            
+            closeModal();
+            alert('¡Cliente registrado y seleccionado exitosamente!');
+        })
+        .catch(err => {
+            alert('Error: ' + err.message);
+        });
     }
 </script>
 {% endblock %}

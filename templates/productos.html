@@ -48,7 +48,7 @@
                         </div>
                     </td>
                     <td><i class="fas fa-box" style="color: var(--verde-secundario);"></i> Terminado</td>
-                    <td><span style="color: var(--verde-premium); font-weight: 800; font-size: 1.1rem;">${{ "{:,.2f}".format(p.precio_venta) }}</span></td>
+                    <td><span style="color: var(--verde-premium); font-weight: 800; font-size: 1.1rem;">C$ {{ "{:,.2f}".format(p.precio_venta) }}</span></td>
                     <td>
                         {% if p.stock_actual <= p.stock_minimo %}
                         <span class="badge badge-danger">{{ p.stock_actual }} UND</span>

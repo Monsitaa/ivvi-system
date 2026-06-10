@@ -98,7 +98,11 @@
                         </div>
                     </td>
                     <td>
+                        {% if item.estado == 'Activo' %}
                         <span class="badge badge-success">Activo</span>
+                        {% else %}
+                        <span class="badge" style="background: #f1f5f9; color: #64748b;">Inactivo</span>
+                        {% endif %}
                     </td>
                     <td>
                         <div style="display: flex; gap: 8px;">

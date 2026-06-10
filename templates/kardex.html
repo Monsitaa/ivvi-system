@@ -18,7 +18,18 @@
 </div>
 
 <div class="card">
-    <h3><i class="fas fa-history" style="color: var(--verde-secundario);"></i> Trazabilidad Inmutable de Inventario</h3>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+        <h3><i class="fas fa-history" style="color: var(--verde-secundario);"></i> Trazabilidad Inmutable de Inventario</h3>
+        
+        <!-- Filtros Rápidos -->
+        <div class="kardex-filters" style="display: flex; gap: 8px;">
+            <button class="btn btn-primary" onclick="filterKardex('TODO')" id="btn-TODO" style="padding: 6px 12px; font-size: 0.85rem; border-radius: 8px;">Ver Todo</button>
+            <button class="btn btn-secondary" onclick="filterKardex('ENTRADA')" id="btn-ENTRADA" style="padding: 6px 12px; font-size: 0.85rem; border-radius: 8px; background: rgba(5,150,105,0.1); color: var(--verde-premium);">Entradas (Compras/Prod)</button>
+            <button class="btn btn-secondary" onclick="filterKardex('VENTA')" id="btn-VENTA" style="padding: 6px 12px; font-size: 0.85rem; border-radius: 8px; background: rgba(59,130,246,0.1); color: #2563eb;">Solo Ventas</button>
+            <button class="btn btn-secondary" onclick="filterKardex('AJUSTE')" id="btn-AJUSTE" style="padding: 6px 12px; font-size: 0.85rem; border-radius: 8px; background: rgba(239,68,68,0.1); color: #dc2626;">Mermas / Ajustes</button>
+        </div>
+    </div>
+    
     <div class="table-container">
         <table>
             <thead>
@@ -42,14 +53,43 @@
                         </span>
                     </td>
                     <td style="text-align: center;">
+                        {% set doc_str = m.documento_id|string %}
                         {% if m.tipo_movimiento == 'ENTRADA' %}
-                        <span class="badge badge-success" style="width: 100px; justify-content: center;">
-                            <i class="fas fa-right-to-bracket"></i> {{ m.tipo_movimiento }}
-                        </span>
+                            {% if doc_str.startswith('COMPRA') %}
+                                <span class="badge" style="background: rgba(5,150,105,0.15); color: #065f46; border: 1px solid rgba(5,150,105,0.3); width: 140px; justify-content: center; font-size: 0.75rem;">
+                                    <i class="fas fa-truck-loading" style="margin-right: 5px;"></i> ENT - COMPRA
+                                </span>
+                            {% elif doc_str.startswith('PLANTA') %}
+                                <span class="badge" style="background: rgba(217,119,6,0.15); color: #b45309; border: 1px solid rgba(217,119,6,0.3); width: 140px; justify-content: center; font-size: 0.75rem;">
+                                    <i class="fas fa-industry" style="margin-right: 5px;"></i> ENT - PRODUCCIÓN
+                                </span>
+                            {% elif 'AJUSTE-VENTA' in doc_str %}
+                                <span class="badge" style="background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; width: 140px; justify-content: center; font-size: 0.75rem;">
+                                    <i class="fas fa-rotate-left" style="margin-right: 5px;"></i> ENT - ANULACIÓN
+                                </span>
+                            {% else %}
+                                <span class="badge badge-success" style="width: 140px; justify-content: center; font-size: 0.75rem;">
+                                    <i class="fas fa-right-to-bracket" style="margin-right: 5px;"></i> ENTRADA
+                                </span>
+                            {% endif %}
                         {% else %}
-                        <span class="badge badge-danger" style="width: 100px; justify-content: center;">
-                            <i class="fas fa-right-from-bracket"></i> {{ m.tipo_movimiento }}
-                        </span>
+                            {% if doc_str.startswith('VENTA') %}
+                                <span class="badge" style="background: rgba(59,130,246,0.15); color: #1d4ed8; border: 1px solid rgba(59,130,246,0.3); width: 140px; justify-content: center; font-size: 0.75rem;">
+                                    <i class="fas fa-shopping-cart" style="margin-right: 5px;"></i> SAL - VENTA
+                                </span>
+                            {% elif 'AJUSTE-COMPRA' in doc_str %}
+                                <span class="badge" style="background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; width: 140px; justify-content: center; font-size: 0.75rem;">
+                                    <i class="fas fa-rotate-right" style="margin-right: 5px;"></i> SAL - ANULACIÓN
+                                </span>
+                            {% elif doc_str.startswith('AJUSTE') %}
+                                <span class="badge" style="background: rgba(220,38,38,0.15); color: #991b1b; border: 1px solid rgba(220,38,38,0.3); width: 140px; justify-content: center; font-size: 0.75rem;">
+                                    <i class="fas fa-triangle-exclamation" style="margin-right: 5px;"></i> SAL - MERMA
+                                </span>
+                            {% else %}
+                                <span class="badge badge-danger" style="width: 140px; justify-content: center; font-size: 0.75rem;">
+                                    <i class="fas fa-right-from-bracket" style="margin-right: 5px;"></i> SALIDA
+                                </span>
+                            {% endif %}
                         {% endif %}
                     </td>
                     <td>
@@ -82,4 +122,38 @@
         </table>
     </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function filterKardex(filterType) {
+        // Estilos de botones
+        const buttons = document.querySelectorAll('.kardex-filters button');
+        buttons.forEach(btn => {
+            btn.className = 'btn btn-secondary';
+        });
+        document.getElementById('btn-' + filterType).className = 'btn btn-primary';
+        
+        // Lógica de filtrado en tabla
+        const rows = document.querySelectorAll('tbody tr');
+        rows.forEach(row => {
+            const flowBadge = row.querySelector('td:nth-child(2)').innerText.trim();
+            const docRef = row.querySelector('td:nth-child(3)').innerText.trim();
+            
+            let show = false;
+            
+            if (filterType === 'TODO') {
+                show = true;
+            } else if (filterType === 'ENTRADA') {
+                if (flowBadge.includes('ENT -')) show = true;
+            } else if (filterType === 'VENTA') {
+                if (docRef.includes('VENTA')) show = true;
+            } else if (filterType === 'AJUSTE') {
+                if (docRef.includes('AJUSTE')) show = true;
+            }
+            
+            row.style.display = show ? '' : 'none';
+        });
+    }
+</script>
 {% endblock %}

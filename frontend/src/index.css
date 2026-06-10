@@ -1,0 +1,77 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+
+@theme {
+  --color-ivvi-teal: #0d9488;
+  --color-ivvi-teal-dark: #0f766e;
+  --color-ivvi-teal-light: #14b8a6;
+  --color-ivvi-amber: #f59e0b;
+  --color-ivvi-amber-dark: #d97706;
+  --color-ivvi-dark: #090d16;
+  --color-ivvi-dark-card: rgba(17, 24, 39, 0.65);
+  
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-heading: 'Outfit', 'Inter', system-ui, sans-serif;
+}
+
+html {
+  font-size: 13.5px; /* Hace que el diseño a 100% zoom sea un ~15% más compacto y equilibrado */
+}
+
+@media (min-width: 1600px) {
+  html {
+    font-size: 14.5px; /* Escala ligeramente mayor en pantallas muy grandes */
+  }
+}
+
+@media (max-width: 768px) {
+  html {
+    font-size: 16px; /* Tamaño por defecto en móviles para mejor legibilidad */
+  }
+}
+
+:root {
+  font-family: var(--font-sans);
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background-color: #f1f5f9;
+  color: #0f172a;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Enable class-based dark mode toggle */
+.dark body {
+  background-color: var(--color-ivvi-dark);
+  color: #f8fafc;
+}
+
+/* Glassmorphism utility card border light/dark transition */
+.glass-card {
+  backdrop-filter: blur(25px);
+  -webkit-backdrop-filter: blur(25px);
+  border: 1px solid rgba(203, 213, 225, 0.5);
+  background-color: rgba(255, 255, 255, 0.75);
+  box-shadow: 0 10px 30px -5px rgba(15, 23, 42, 0.08), 0 4px 12px -2px rgba(15, 23, 42, 0.03);
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.dark .glass-card {
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background-color: var(--color-ivvi-dark-card);
+  box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.4), 0 5px 15px -2px rgba(0, 0, 0, 0.2);
+}
+
+.glass-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(20, 184, 166, 0.25);
+  box-shadow: 0 20px 40px -10px rgba(15, 23, 42, 0.12);
+}
+
+.dark .glass-card:hover {
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+}

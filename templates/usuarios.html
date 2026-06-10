@@ -1,54 +1,78 @@
 {% extends "base.html" %}
 
-{% block title %}Administración de Usuarios | IVVI S.A.{% endblock %}
+{% block title %}Personal y Accesos | IVVI S.A.{% endblock %}
 
 {% block content %}
 <div class="action-bar">
     <div class="header-title">
-        <h2>Control de Accesos y Usuarios</h2>
+        <h2>Personal y Accesos (Colaboradores)</h2>
     </div>
-    <button class="btn btn-primary" onclick="toggleForm()" id="toggle-btn">
-        <i class="fas fa-user-plus" id="toggle-icon"></i> <span id="toggle-text">Nuevo Usuario</span>
+    <button class="btn btn-primary" onclick="toggleForm()" id="toggle-btn" style="background: linear-gradient(135deg, var(--naranja-ivvi), var(--naranja-hover));">
+        <i class="fas fa-user-plus" id="toggle-icon"></i> <span id="toggle-text">Nuevo Colaborador</span>
     </button>
 </div>
 
 <div id="form-wrapper" style="overflow: hidden; max-height: 0; transition: max-height 0.45s ease, opacity 0.35s ease; opacity: 0;">
-<div class="card" id="form-card" style="max-width: 800px; margin: 0 auto 3rem auto;">
-    <h3><i class="fas fa-user-shield"></i> Registro de Seguridad</h3>
-    <form action="{{ url_for('usuarios') }}" method="POST">
+<div class="card" id="form-card" style="max-width: 900px; margin: 0 auto 3rem auto; border: 1px solid var(--border-color);">
+    <h3><i class="fas fa-users-gear" style="color: var(--naranja-ivvi);"></i> Registro de Colaborador</h3>
+    <form action="{{ url_for('usuarios') }}" method="POST" style="margin-top: 1rem;">
         <input type="hidden" name="id" id="usr-id">
-        <div class="form-group">
-            <label><i class="fas fa-user-tie"></i> Nombre Completo del Operario</label>
-            <input type="text" name="nombre" required placeholder="Ej: Ing. Roberto Mendoza">
-        </div>
-
-        <div class="form-grid">
+        
+        <div class="form-grid" style="grid-template-columns: repeat(2, 1fr); gap: 1.5rem;">
             <div class="form-group">
-                <label><i class="fas fa-envelope-shield"></i> Email Institucional</label>
-                <input type="email" name="email" required placeholder="Ej: r.mendoza@ivvi.com">
+                <label><i class="fas fa-user"></i> Nombre Completo</label>
+                <input type="text" name="nombre" required placeholder="Ej: Roberto Mendoza Ortega" style="padding: 0.6rem 1rem; border-radius: 12px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); width: 100%;">
             </div>
             <div class="form-group">
-                <label><i class="fas fa-id-badge"></i> Rol Jerárquico</label>
-                <select name="rol" required>
-                    <option value="" disabled selected>Asignar nivel de acceso</option>
-                    <option value="Administrador">Administrador de Sistema</option>
-                    <option value="Operador de Almacén">Operador de Logística</option>
-                    <option value="Vendedor">Ejecutivo Comercial</option>
-                    <option value="Gerencia">Gerencia de Planta</option>
+                <label><i class="fas fa-briefcase"></i> Cargo de la Empresa</label>
+                <input type="text" name="cargo" placeholder="Ej: Conductor, Operario de Envasado, Gerente" style="padding: 0.6rem 1rem; border-radius: 12px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); width: 100%;">
+            </div>
+        </div>
+
+        <div class="form-grid" style="grid-template-columns: repeat(2, 1fr); gap: 1.5rem; margin-top: 1.2rem;">
+            <div class="form-group">
+                <label><i class="fas fa-envelope"></i> Email Institucional / Usuario</label>
+                <input type="email" name="email" id="usr-email" placeholder="Ej: r.mendoza@ivvi.com" style="padding: 0.6rem 1rem; border-radius: 12px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); width: 100%;">
+            </div>
+            <div class="form-group">
+                <label><i class="fas fa-phone"></i> Teléfono de Contacto</label>
+                <input type="text" name="telefono" placeholder="Ej: 8888-9999" style="padding: 0.6rem 1rem; border-radius: 12px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); width: 100%;">
+            </div>
+        </div>
+
+        <div class="form-group" style="margin-top: 1.2rem;">
+            <label><i class="fas fa-map-location-dot"></i> Dirección Domiciliar</label>
+            <input type="text" name="direccion" placeholder="Dirección completa del colaborador..." style="padding: 0.6rem 1rem; border-radius: 12px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); width: 100%;">
+        </div>
+
+        <div class="form-grid" style="grid-template-columns: repeat(2, 1fr); gap: 1.5rem; margin-top: 1.2rem;">
+            <div class="form-group">
+                <label><i class="fas fa-user-shield"></i> Rol de Sistema (Permisos)</label>
+                <select name="rol" id="rol-select" onchange="toggleCredentialsRules()" required style="padding: 0.6rem 1rem; border-radius: 12px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); width: 100%;">
+                    <option value="" disabled selected>Seleccione el nivel de acceso...</option>
+                    <optgroup label="Personal Administrativo (Requiere Credenciales)">
+                        <option value="Administrador">Administrador de Sistema</option>
+                        <option value="Gerencia">Gerencia de Planta</option>
+                        <option value="Vendedor">Ejecutivo Comercial</option>
+                        <option value="Operador de Almacén">Operador de Logística</option>
+                    </optgroup>
+                    <optgroup label="Personal Operativo">
+                        <option value="Sin Acceso">Sin Acceso Web (Solo Registro en Planilla)</option>
+                    </optgroup>
                 </select>
+                <small id="rol-feedback" style="display: block; margin-top: 6px; font-weight: 600;"></small>
+            </div>
+            <div class="form-group" id="credenciales-group">
+                <label><i class="fas fa-key"></i> Contraseña de Acceso</label>
+                <input type="password" name="password" id="usr-pass" placeholder="Definir contraseña...">
+                <small id="pass-feedback" style="color: var(--gris-medio); display: block; margin-top: 5px;">* Requerida para perfiles administrativos.</small>
             </div>
         </div>
 
-        <div class="form-group">
-            <label><i class="fas fa-key"></i> Contraseña de Acceso Industrial</label>
-            <input type="password" name="password" id="usr-pass" required placeholder="••••••••••••">
-            <small style="color: var(--gris-medio); display: block; margin-top: 5px;">* Dejar en blanco para no cambiar en modo edición.</small>
-        </div>
-
-        <div style="display: flex; justify-content: flex-end; gap: 15px; margin-top: 1rem;">
-            <button type="reset" class="btn btn-secondary">Limpiar</button>
-            <button type="submit" class="btn btn-primary">
-                <i class="fas fa-shield-halved"></i> Autorizar Creación
+        <div style="display: flex; justify-content: flex-end; gap: 15px; margin-top: 2rem;">
+            <button type="button" class="btn btn-secondary" onclick="toggleForm()">Cancelar</button>
+            <button type="submit" class="btn btn-primary" style="background: linear-gradient(135deg, var(--naranja-ivvi), var(--naranja-hover));">
+                <i class="fas fa-save"></i> Guardar Colaborador
             </button>
         </div>
     </form>
@@ -60,9 +84,10 @@
         <table>
             <thead>
                 <tr>
-                    <th>Nombre de Usuario</th>
-                    <th>Credencial / Email</th>
-                    <th>Nivel de Acceso</th>
+                    <th>Nombre / Cargo</th>
+                    <th>Email / Teléfono</th>
+                    <th>Rol de Sistema</th>
+                    <th>Dirección</th>
                     <th>Estado de Cuenta</th>
                     <th>Acciones</th>
                 </tr>
@@ -75,32 +100,50 @@
                             <div style="width: 40px; height: 40px; background: var(--verde-suave); color: var(--verde-premium); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800;">
                                 {{ item.nombre[:1] if item.nombre else 'U' }}
                             </div>
-                            <strong style="color: var(--verde-premium); font-size: 1.05rem;">{{ item.nombre }}</strong>
+                            <div>
+                                <strong style="color: var(--verde-premium); font-size: 1.05rem; display: block;">{{ item.nombre }}</strong>
+                                <small style="color: var(--gris-medio); font-weight: 600;">{{ item.cargo or 'Sin Cargo Asignado' }}</small>
+                            </div>
                         </div>
                     </td>
                     <td>
-                        <span style="color: var(--text-muted); font-size: 0.95rem;">
+                        <span style="color: var(--text-muted); font-size: 0.9rem; display: block; margin-bottom: 2px;">
                             <i class="far fa-envelope-open" style="margin-right: 5px;"></i> {{ item.email }}
                         </span>
+                        {% if item.telefono %}
+                        <small style="color: var(--gris-medio); font-weight: 500;">
+                            <i class="fas fa-phone" style="font-size: 0.75rem; margin-right: 5px;"></i> {{ item.telefono }}
+                        </small>
+                        {% endif %}
                     </td>
                     <td>
                         <span class="badge" style="background: var(--verde-premium); color: white; padding: 6px 14px; border-radius: 8px;">
                             <i class="fas fa-crown" style="font-size: 0.7rem; margin-right: 5px;"></i> {{ item.rol }}
                         </span>
+                        {% if not item.password_hash %}
+                        <small style="display: block; color: var(--gris-medio); margin-top: 4px; font-weight: 600;"><i class="fas fa-ban"></i> Sin Acceso Web</small>
+                        {% endif %}
+                    </td>
+                    <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.9rem; color: var(--text-muted);">
+                        {{ item.direccion or 'N/A' }}
                     </td>
                     <td>
+                        {% if item.estado == 'Activo' %}
                         <span class="badge badge-success">Activo</span>
+                        {% else %}
+                        <span class="badge" style="background: #f1f5f9; color: #64748b;">Inactivo</span>
+                        {% endif %}
                     </td>
                     <td>
                         <div style="display: flex; gap: 8px;">
-                            <button class="btn btn-secondary" style="padding: 10px; border-radius: 12px;" title="Editar Usuario"
-                                onclick="editUsr('{{ item.id }}', '{{ item.nombre }}', '{{ item.email }}', '{{ item.rol }}')">
+                            <button class="btn btn-secondary" style="padding: 10px; border-radius: 12px;" title="Editar Colaborador"
+                                onclick="editUsr('{{ item.id }}', '{{ item.nombre }}', '{{ item.email }}', '{{ item.rol }}', '{{ item.telefono or '' }}', '{{ item.direccion or '' }}', '{{ item.cargo or '' }}')">
                                 <i class="fas fa-user-gear"></i>
                             </button>
                             {% if item.email != 'admin@ivvi.com' %}
                             <a href="{{ url_for('eliminar_entidad', tipo='usuario', id=item.id) }}" class="btn" 
                                 style="padding: 10px; border-radius: 12px; color: var(--rojo-error); border: 1px solid var(--rojo-suave); background: var(--rojo-suave);"
-                                onclick="return confirm('¿Eliminar cuenta de este usuario?')">
+                                onclick="return confirm('¿Eliminar cuenta de este colaborador?')">
                                 <i class="fas fa-user-xmark"></i>
                             </a>
                             {% endif %}
@@ -112,6 +155,7 @@
         </table>
     </div>
 </div>
+
 {% block scripts %}
 <script>
     function toggleForm(forceOpen) {
@@ -120,7 +164,7 @@
         const text = document.getElementById('toggle-text');
         const isOpen = wrapper.style.maxHeight !== '0px' && wrapper.style.maxHeight !== '';
         if (forceOpen || !isOpen) {
-            wrapper.style.maxHeight = '800px';
+            wrapper.style.maxHeight = '1200px';
             wrapper.style.opacity = '1';
             icon.className = 'fas fa-times';
             text.textContent = 'Cerrar';
@@ -129,17 +173,81 @@
             wrapper.style.maxHeight = '0';
             wrapper.style.opacity = '0';
             icon.className = 'fas fa-user-plus';
-            text.textContent = 'Nuevo Usuario';
+            text.textContent = 'Nuevo Colaborador';
+            
+            // Limpiar formulario al cerrar
+            document.getElementById('usr-id').value = '';
+            document.querySelector('[name="nombre"]').value = '';
+            document.querySelector('[name="email"]').value = '';
+            document.querySelector('[name="rol"]').value = '';
+            document.querySelector('[name="telefono"]').value = '';
+            document.querySelector('[name="direccion"]').value = '';
+            document.querySelector('[name="cargo"]').value = '';
+            document.getElementById('usr-pass').value = '';
+            toggleCredentialsRules(); // Restablecer reglas visuales
+            document.querySelector('#form-card h3').innerHTML = '<i class="fas fa-users-gear" style="color: var(--naranja-ivvi);"></i> Registro de Colaborador';
         }
     }
-    function editUsr(id, nombre, email, rol) {
-        toggleForm(true);
+
+    function toggleCredentialsRules() {
+        const rolSelect = document.getElementById('rol-select');
+        const isEditing = document.getElementById('usr-id').value !== '';
+        const emailInput = document.getElementById('usr-email');
+        const passInput = document.getElementById('usr-pass');
+        const feedback = document.getElementById('rol-feedback');
+        const passFeedback = document.getElementById('pass-feedback');
+        
+        if (!rolSelect.value) return;
+
+        if (rolSelect.value === 'Sin Acceso') {
+            // Personal Operativo
+            emailInput.removeAttribute('required');
+            passInput.removeAttribute('required');
+            emailInput.value = ''; // Limpiar email si lo habían llenado
+            passInput.value = '';
+            emailInput.setAttribute('disabled', 'true');
+            passInput.setAttribute('disabled', 'true');
+            emailInput.style.opacity = '0.5';
+            passInput.style.opacity = '0.5';
+            
+            feedback.innerHTML = '<i class="fas fa-info-circle"></i> Personal de campo. No tendrá acceso al sistema web.';
+            feedback.style.color = 'var(--text-muted)';
+            passFeedback.innerHTML = 'No aplicable.';
+        } else {
+            // Personal Administrativo
+            emailInput.removeAttribute('disabled');
+            passInput.removeAttribute('disabled');
+            emailInput.style.opacity = '1';
+            passInput.style.opacity = '1';
+            emailInput.setAttribute('required', 'required');
+            
+            feedback.innerHTML = '<i class="fas fa-check-circle"></i> Perfil Administrativo habilitado.';
+            feedback.style.color = 'var(--verde-premium)';
+            
+            if (isEditing) {
+                passInput.removeAttribute('required');
+                passFeedback.innerHTML = '* Opcional: Dejar en blanco para mantener la contraseña actual.';
+            } else {
+                passInput.setAttribute('required', 'required');
+                passFeedback.innerHTML = '* Obligatorio: Defina una contraseña inicial.';
+            }
+        }
+    }
+    
+    function editUsr(id, nombre, email, rol, telefono, direccion, cargo) {
         document.getElementById('usr-id').value = id;
         document.querySelector('[name="nombre"]').value = nombre;
-        document.querySelector('[name="email"]').value = email;
+        document.querySelector('[name="email"]').value = email !== 'None' ? email : '';
         document.querySelector('[name="rol"]').value = rol;
-        document.getElementById('usr-pass').removeAttribute('required');
-        document.querySelector('#form-card h3').innerHTML = '<i class="fas fa-edit"></i> Editando Usuario: ' + nombre;
+        document.querySelector('[name="telefono"]').value = telefono !== 'None' ? telefono : '';
+        document.querySelector('[name="direccion"]').value = direccion !== 'None' ? direccion : '';
+        document.querySelector('[name="cargo"]').value = cargo !== 'None' ? cargo : '';
+        
+        // Ejecutar las reglas de UI
+        toggleCredentialsRules();
+        
+        document.querySelector('#form-card h3').innerHTML = '<i class="fas fa-edit"></i> Editando Colaborador: ' + nombre;
+        toggleForm(true);
     }
 </script>
 {% endblock %}

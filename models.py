@@ -1,5 +1,6 @@
 from db import db
-from datetime import datetime
+from datetime import datetime, timezone
+from werkzeug.security import generate_password_hash, check_password_hash
 
 # --- BASE DE DATOS Y POO ---
 
@@ -10,6 +11,8 @@ class ConfiguracionGlobal(db.Model):
     nombre_empresa = db.Column(db.String(150), default='IVVI S.A.')
     ruc = db.Column(db.String(50), default='1790045623001')
     tasa_cambio = db.Column(db.Float, default=36.00)
+    tasa_cambio_max = db.Column(db.Float, default=40.00)  # Limite maximo permitido para evitar errores graves
+    sku_bidon_vacio = db.Column(db.String(50), default='BID-VACIO-19L')  # SKU del envase retornable de 19L
 
 class Persona(db.Model):
     """
@@ -35,17 +38,34 @@ class Persona(db.Model):
 
 class Usuario(Persona):
     """
-    Entidad de acceso al sistema (Herencia de Persona).
+    Entidad de colaboradores y acceso al sistema (Herencia de Persona).
     """
     __tablename__ = 'usuarios'
     id = db.Column(db.Integer, db.ForeignKey('personas.id'), primary_key=True)
     rol = db.Column(db.String(50), nullable=False) # Administrador, Operador, Vendedor, Gerencia
-    password = db.Column(db.String(100), nullable=False)
+    password_hash = db.Column('password', db.String(255), nullable=True) # Mapeado a la columna 'password'
     estado = db.Column(db.String(20), default='Activo')
+    cargo = db.Column(db.String(100), nullable=True) # Cargo específico en la empresa (ej: Chofer, Operario)
 
     __mapper_args__ = {
         'polymorphic_identity': 'usuario',
     }
+
+    @property
+    def password(self):
+        raise AttributeError('La contraseña no es un atributo legible.')
+
+    @password.setter
+    def password(self, val):
+        if val is not None:
+            self.password_hash = generate_password_hash(val)
+        else:
+            self.password_hash = None
+
+    def verificar_password(self, val):
+        if not self.password_hash:
+            return False
+        return check_password_hash(self.password_hash, val)
 
 class Cliente(Persona):
     """
@@ -57,25 +77,13 @@ class Cliente(Persona):
     contacto_principal = db.Column(db.String(100))
     observaciones = db.Column(db.Text)
     estado = db.Column(db.String(20), default='Activo')
+    envases_pendientes = db.Column(db.Integer, default=0, nullable=False)
 
     __mapper_args__ = {
         'polymorphic_identity': 'cliente',
     }
 
-class Empleado(Persona):
-    """
-    Entidad de personal (Herencia de Persona).
-    """
-    __tablename__ = 'empleados'
-    id = db.Column(db.Integer, db.ForeignKey('personas.id'), primary_key=True)
-    cargo = db.Column(db.String(100))
-    estado = db.Column(db.String(20), default='Activo')
-    observaciones = db.Column(db.Text)
-    usuario_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=True)
-
-    __mapper_args__ = {
-        'polymorphic_identity': 'empleado',
-    }
+# El modelo Empleado ha sido fusionado con Usuario para evitar redundancia.
 
 class Proveedor(db.Model):
     """
@@ -110,11 +118,7 @@ class UnidadMedida(db.Model):
     nombre = db.Column(db.String(50), nullable=False) # Litros, Galones, Kilos, etc.
     abreviatura = db.Column(db.String(10))
 
-class Bodega(db.Model):
-    __tablename__ = 'bodegas'
-    id = db.Column(db.Integer, primary_key=True)
-    nombre = db.Column(db.String(100), nullable=False)
-    ubicacion = db.Column(db.String(250))
+# El modelo Bodega ha sido eliminado debido a la unificación a un solo almacén central.
 
 class Producto(db.Model):
     """
@@ -128,12 +132,12 @@ class Producto(db.Model):
     categoria_id = db.Column(db.Integer, db.ForeignKey('categorias.id'))
     unidad_id = db.Column(db.Integer, db.ForeignKey('unidades_medida.id'))
     precio_venta = db.Column(db.Float, default=0.0)
-    stock_minimo = db.Column(db.Integer, default=5)
+    stock_minimo = db.Column(db.Float, default=5.0)
     factor_conversion = db.Column(db.Float, default=1.0) # Cuántas uds inventario por 1 ud compra
     estado = db.Column(db.String(20), default='Activo')
     
     # Campo calculado o centralizado
-    stock_actual = db.Column(db.Integer, default=0)
+    stock_actual = db.Column(db.Float, default=0.0)
 
     # Relaciones
     categoria = db.relationship('Categoria', backref='productos', lazy=True)
@@ -146,6 +150,29 @@ class Producto(db.Model):
     def es_bajo_stock(self):
         return self.stock_actual <= self.stock_minimo
 
+class RecetaEnvasado(db.Model):
+    """ RECETA DE ENVASADO DINÁMICA """
+    __tablename__ = 'recetas_envasado'
+    id = db.Column(db.Integer, primary_key=True)
+    codigo = db.Column(db.String(50), unique=True, nullable=False) # e.g. 'ESTANDAR-19L'
+    nombre = db.Column(db.String(150), nullable=False) # e.g. 'Fruto Dorado 19L'
+    
+    # Insumos / Materias primas consumidas
+    producto_aceite_id = db.Column(db.Integer, db.ForeignKey('productos.id'), nullable=False)
+    producto_envase_id = db.Column(db.Integer, db.ForeignKey('productos.id'), nullable=False)
+    
+    # Producto terminado resultante
+    producto_final_id = db.Column(db.Integer, db.ForeignKey('productos.id'), nullable=False)
+    
+    litros_aceite = db.Column(db.Float, nullable=False, default=19.0)
+    estado = db.Column(db.String(20), default='Activo') # 'Activo' o 'Inactivo'
+
+    # Relaciones
+    producto_aceite = db.relationship('Producto', foreign_keys=[producto_aceite_id])
+    producto_envase = db.relationship('Producto', foreign_keys=[producto_envase_id])
+    producto_final = db.relationship('Producto', foreign_keys=[producto_final_id])
+
+
 # --- OPERACIONES ---
 
 class Compra(db.Model):
@@ -153,9 +180,8 @@ class Compra(db.Model):
     __tablename__ = 'compras'
     id = db.Column(db.Integer, primary_key=True)
     proveedor_id = db.Column(db.Integer, db.ForeignKey('proveedores.id'))
-    fecha = db.Column(db.DateTime, default=datetime.utcnow)
-    numero_factura = db.Column(db.String(50))
-    bodega_id = db.Column(db.Integer, db.ForeignKey('bodegas.id'))
+    fecha = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    numero_factura = db.Column(db.String(50), unique=True)  # Unicidad obligatoria — evita duplicados contables
     observaciones = db.Column(db.Text)
     
     # Manejo Multimoneda
@@ -164,11 +190,13 @@ class Compra(db.Model):
     total = db.Column(db.Float, default=0.0) # Total expresado en la moneda original de transacción
     total_base = db.Column(db.Float, default=0.0) # Total normalizado forzosamente a la moneda principal de la compañía (NIO)
     estado = db.Column(db.String(20), default='Completada') # Completada, Anulada
+    anulado_por_usuario_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=True)  # Quién anuló
+    fecha_anulacion = db.Column(db.DateTime, nullable=True)  # Cuándo se anuló
 
     # Relaciones
     proveedor = db.relationship('Proveedor', backref='compras', lazy=True)
-    bodega = db.relationship('Bodega', backref='compras', lazy=True)
     detalles = db.relationship('DetalleCompra', backref='compra', lazy=True, cascade="all, delete-orphan")
+    anulado_por_usuario = db.relationship('Usuario', foreign_keys=[anulado_por_usuario_id], lazy=True)
 
 class DetalleCompra(db.Model):
     """ DETALLE DE COMPRA """
@@ -176,7 +204,7 @@ class DetalleCompra(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     compra_id = db.Column(db.Integer, db.ForeignKey('compras.id'))
     producto_id = db.Column(db.Integer, db.ForeignKey('productos.id'))
-    cantidad = db.Column(db.Integer, nullable=False)
+    cantidad = db.Column(db.Float, nullable=False)
     costo_unitario = db.Column(db.Float, nullable=False)
     subtotal = db.Column(db.Float, nullable=False)
 
@@ -189,15 +217,18 @@ class Venta(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     cliente_id = db.Column(db.Integer, db.ForeignKey('clientes.id'))
     vendedor_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'))
-    fecha = db.Column(db.DateTime, default=datetime.utcnow)
-    numero_factura = db.Column(db.String(50))
+    fecha = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    numero_factura = db.Column(db.String(50), unique=True)  # Unicidad obligatoria — evita duplicados contables
     observaciones = db.Column(db.Text)
     total = db.Column(db.Float, default=0.0)
     estado = db.Column(db.String(20), default='Completada') # Completada, Anulada
+    anulado_por_usuario_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=True)  # Quién anuló
+    fecha_anulacion = db.Column(db.DateTime, nullable=True)  # Cuándo se anuló
 
     # Relaciones
     cliente = db.relationship('Cliente', backref='ventas', lazy=True)
-    usuario = db.relationship('Usuario', backref='ventas', lazy=True)
+    usuario = db.relationship('Usuario', foreign_keys=[vendedor_id], backref='ventas', lazy=True)
+    anulado_por_usuario = db.relationship('Usuario', foreign_keys=[anulado_por_usuario_id], lazy=True)
     detalles = db.relationship('DetalleVenta', backref='venta', lazy=True, cascade="all, delete-orphan")
 
 class DetalleVenta(db.Model):
@@ -206,7 +237,7 @@ class DetalleVenta(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     venta_id = db.Column(db.Integer, db.ForeignKey('ventas.id'))
     producto_id = db.Column(db.Integer, db.ForeignKey('productos.id'))
-    cantidad = db.Column(db.Integer, nullable=False)
+    cantidad = db.Column(db.Float, nullable=False)
     precio_unitario = db.Column(db.Float, nullable=False)
     descuento = db.Column(db.Float, default=0.0)
     impuesto = db.Column(db.Float, default=0.0)
@@ -221,16 +252,32 @@ class Kardex(db.Model):
     """ HISTORIAL DE MOVIMIENTOS (Trazabilidad) """
     __tablename__ = 'kardex'
     id = db.Column(db.Integer, primary_key=True)
-    fecha = db.Column(db.DateTime, default=datetime.utcnow)
+    fecha = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     tipo_movimiento = db.Column(db.String(50)) # ENTRADA, SALIDA, AJUSTE
     documento_id = db.Column(db.String(50))    # ID de venta o compra
     producto_id = db.Column(db.Integer, db.ForeignKey('productos.id'))
-    cantidad = db.Column(db.Integer, nullable=False)
+    cantidad = db.Column(db.Float, nullable=False)
     usuario_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'))
     observacion = db.Column(db.String(250))
 
     # Relaciones
     producto = db.relationship('Producto', lazy=True)
+    usuario = db.relationship('Usuario', lazy=True)
+
+class RetornoEnvase(db.Model):
+    """ HISTORIAL DE RETORNOS DE ENVASES 19L """
+    __tablename__ = 'retorno_envases'
+    id = db.Column(db.Integer, primary_key=True)
+    cliente_id = db.Column(db.Integer, db.ForeignKey('clientes.id'), nullable=False)
+    usuario_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=False)
+    fecha = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    cantidad_total = db.Column(db.Integer, nullable=False)
+    cantidad_buenos = db.Column(db.Integer, nullable=False)
+    cantidad_danados = db.Column(db.Integer, nullable=False)
+    observaciones = db.Column(db.String(250))
+
+    # Relaciones
+    cliente = db.relationship('Cliente', backref='retornos', lazy=True)
     usuario = db.relationship('Usuario', lazy=True)
 
 # --- LÓGICA DE NEGOCIO (Modularidad) ---
@@ -240,7 +287,7 @@ class InventarioService:
     
     @staticmethod
     def registrar_entrada(producto_id, cantidad, documento, usuario_id, obs="Compra"):
-        prod = Producto.query.get(producto_id)
+        prod = db.session.query(Producto).filter_by(id=producto_id).with_for_update().first()
         if prod:
             prod.stock_actual += cantidad
             mov = Kardex(
@@ -257,7 +304,7 @@ class InventarioService:
 
     @staticmethod
     def registrar_salida(producto_id, cantidad, documento, usuario_id, obs="Venta"):
-        prod = Producto.query.get(producto_id)
+        prod = db.session.query(Producto).filter_by(id=producto_id).with_for_update().first()
         if prod and prod.validar_stock(cantidad):
             prod.stock_actual -= cantidad
             mov = Kardex(
@@ -273,64 +320,54 @@ class InventarioService:
         return False
 
     @staticmethod
-    def registrar_produccion(tipo_combo, cantidad, usuario_id):
+    def registrar_produccion(tipo_combo, cantidad, usuario_id, merma_aceite=0, merma_envase=0):
         """
-        Lógica de Envasado Multimarca y Multi-Envase
+        Lógica de Envasado Multimarca y Multi-Envase (Transaccional con Mermas de Base de Datos)
         """
-        config = {
-            'ESTANDAR-19L': {
-                'sku_oil': 'ACE-EST-BULK', 
-                'sku_envase': 'BID-VACIO-19L', 
-                'sku_final': 'PRO-EST-19L',
-                'oil_ratio': 19,
-                'nombre': 'Fruto Dorado 19L'
-            },
-            'PREMIUM-19L': {
-                'sku_oil': 'ACE-PRE-BULK', 
-                'sku_envase': 'BID-VACIO-19L', 
-                'sku_final': 'PRO-PRE-19L',
-                'oil_ratio': 19,
-                'nombre': 'Divina Providencia 19L'
-            },
-            'PREMIUM-2.5G': {
-                'sku_oil': 'ACE-PRE-BULK', 
-                'sku_envase': 'BOT-VACIA-2.5G', 
-                'sku_final': 'PRO-PRE-2.5G',
-                'oil_ratio': 9.5,
-                'nombre': 'Divina Providencia 2.5 Gal'
-            }
-        }
-
-        if tipo_combo not in config:
-            return False, "Error: Tipo de producción no reconocido."
+        receta = db.session.query(RecetaEnvasado).filter_by(codigo=tipo_combo, estado='Activo').first()
+        if not receta:
+            return False, f"Error: No existe receta activa para el código '{tipo_combo}'."
         
-        c = config[tipo_combo]
-        p_bulk = Producto.query.filter_by(sku=c['sku_oil']).first()
-        p_envase = Producto.query.filter_by(sku=c['sku_envase']).first()
-        p_final = Producto.query.filter_by(sku=c['sku_final']).first()
+        try:
+            with db.session.begin_nested():
+                p_bulk = db.session.query(Producto).filter_by(id=receta.producto_aceite_id).with_for_update().first()
+                p_envase = db.session.query(Producto).filter_by(id=receta.producto_envase_id).with_for_update().first()
+                p_final = db.session.query(Producto).filter_by(id=receta.producto_final_id).with_for_update().first()
 
-        if not p_bulk or not p_envase or not p_final:
-            return False, "Error: Configuración de productos (SKUs) no encontrada en catálogo."
+                if not p_bulk or not p_envase or not p_final:
+                    raise ValueError("Error: Configuración de productos (IDs) no encontrada en catálogo.")
 
-        oil_total = cantidad * c['oil_ratio']
+                oil_total = cantidad * receta.litros_aceite + merma_aceite
+                envase_total = cantidad + merma_envase
 
-        # Validaciones
-        if p_bulk.stock_actual < oil_total:
-            return False, f"Stock insuficiente de Aceite Bulk: Se requieren {oil_total}L."
-        if p_envase.stock_actual < cantidad:
-            return False, f"Stock insuficiente de Envases Vacíos: Se requieren {cantidad} UND."
+                # Validaciones
+                if p_bulk.stock_actual < oil_total:
+                    raise ValueError(f"Stock insuficiente de Aceite Bulk: Se requieren {oil_total}L.")
+                if p_envase.stock_actual < envase_total:
+                    raise ValueError(f"Stock insuficiente de Envases Vacíos: Se requieren {envase_total} UND.")
 
-        # Transacción
-        doc = f"PLANTA-{tipo_combo}-{datetime.now().strftime('%m%d%H%M')}"
-        
-        # 1. Salida ACEITE
-        InventarioService.registrar_salida(p_bulk.id, oil_total, doc, usuario_id, f"Consumo envasado {c['nombre']}")
-        
-        # 2. Salida ENVASE
-        InventarioService.registrar_salida(p_envase.id, cantidad, doc, usuario_id, f"Envases usados para {c['nombre']}")
-        
-        # 3. Entrada FINAL
-        InventarioService.registrar_entrada(p_final.id, cantidad, doc, usuario_id, f"Producción terminada {c['nombre']}")
+                # Transacción
+                doc = f"PLANTA-{tipo_combo}-{datetime.now().strftime('%m%d%H%M')}"
+                
+                # 1. Salida ACEITE
+                obs_oil = f"Consumo envasado {receta.nombre}"
+                if merma_aceite > 0:
+                    obs_oil += f" (+ {merma_aceite}L merma)"
+                InventarioService.registrar_salida(p_bulk.id, oil_total, doc, usuario_id, obs_oil)
+                
+                # 2. Salida ENVASE
+                obs_env = f"Envases usados para {receta.nombre}"
+                if merma_envase > 0:
+                    obs_env += f" (+ {merma_envase} UND merma)"
+                InventarioService.registrar_salida(p_envase.id, envase_total, doc, usuario_id, obs_env)
+                
+                # 3. Entrada FINAL
+                InventarioService.registrar_entrada(p_final.id, cantidad, doc, usuario_id, f"Producción terminada {receta.nombre}")
 
-        return True, f"Orden de producción completada: {cantidad} unidades de {c['nombre']}."
+            return True, f"Orden de producción completada: {cantidad} unidades de {receta.nombre}."
+        except ValueError as e:
+            return False, str(e)
+        except Exception as e:
+            return False, f"Error imprevisto en producción: {str(e)}"
+
 

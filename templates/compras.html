@@ -46,14 +46,7 @@
                 <input type="datetime-local" name="fecha_factura" required style="padding: 0.6rem 1rem; border: 1px solid var(--border-color); border-radius: 16px; width: 100%; background: var(--bg-card); color: var(--text-main);">
             </div>
 
-            <div class="form-group" style="grid-column: span 4;">
-                <label><i class="fas fa-warehouse"></i> Bodega Destino</label>
-                <select name="bodega_id" required>
-                    {% for b in bodegas %}
-                    <option value="{{ b.id }}" {% if loop.first %}selected{% endif %}>{{ b.nombre }}</option>
-                    {% endfor %}
-                </select>
-            </div>
+            <!-- Bodega Destino removida: unificado a almacén central -->
         </div>
 
         <div style="margin-top: 1rem; margin-bottom: 1rem;">
@@ -73,7 +66,7 @@
                     <tbody id="detalle-body">
                         <tr>
                             <td>
-                                <select name="producto_id[]" required style="padding: 0.7rem 1rem;" onchange="updateRowUnit(this)">
+                                <select name="producto_id[]" required class="form-select" onchange="updateRowUnit(this)">
                                     <option value="" selected disabled>Seleccionar producto...</option>
                                     {% for p in productos %}
                                     <option value="{{ p.id }}" data-factor="{{ p.factor_conversion }}" data-unidad="{{ p.unidad.abreviatura }}" data-sku="{{ p.sku }}">
@@ -85,15 +78,15 @@
                             <td>
                                 <span class="unit-badge" style="background: var(--bg-primary); padding: 6px 10px; border-radius: 8px; font-size: 0.85rem; font-weight: 700; color: var(--text-muted); border: 1px solid var(--border-color);"> - </span>
                             </td>
-                            <td><input type="number" name="cantidad[]" class="cant-input" required min="1" value="1" oninput="calculateRow(this)" style="padding: 0.7rem 1rem;"></td>
+                            <td><input type="number" name="cantidad[]" class="cant-input form-control" required min="1" value="1" oninput="calculateRow(this)"></td>
                             <td>
                                 <div style="position: relative; display: flex; align-items: center;">
                                     <span class="currency-symbol" style="position: absolute; left: 12px; color: var(--text-muted); font-weight: 700;">C$</span>
-                                    <input type="number" step="0.01" name="costo[]" class="cost-input" required value="0.00" oninput="calculateRow(this)" style="padding: 0.7rem 1rem 0.7rem 3rem; background: var(--bg-card); color: var(--text-main); border: 1px solid var(--border-color); border-radius: 12px;">
+                                    <input type="number" step="0.01" name="costo[]" class="cost-input form-control" required value="0.00" oninput="calculateRow(this)" style="padding-left: 2.2rem !important;">
                                 </div>
                             </td>
                             <td>
-                                <input type="number" class="sub-input" readonly value="0.00" style="padding: 0.7rem 1rem; background: var(--bg-primary); font-weight: 800; color: var(--verde-premium); border: 1px solid var(--border-color); border-radius: 12px;">
+                                <input type="number" class="sub-input form-control" readonly value="0.00" style="background: var(--bg-primary); font-weight: 800; color: var(--verde-premium);">
                             </td>
                             <td></td>
                         </tr>
@@ -124,7 +117,6 @@
                     <th>Referencia</th>
                     <th>Fecha / Hora</th>
                     <th>Proveedor Asociado</th>
-                    <th>Bodega Destino</th>
                     <th style="text-align: right;">Monto Total</th>
                     <th style="text-align: center;">Acciones</th>
                 </tr>
@@ -139,11 +131,6 @@
                         </span>
                     </td>
                     <td><strong style="color: var(--verde-premium);">{{ item.proveedor.razon_social }}</strong></td>
-                    <td>
-                        <span class="badge" style="background: var(--gris-claro); border: 1px solid #e2e8f0;">
-                            <i class="fas fa-warehouse" style="font-size: 0.7rem; margin-right: 5px;"></i> {{ item.bodega.nombre }}
-                        </span>
-                    </td>
                     <td style="text-align: right;">
                         <span style="display: block; font-weight: 900; color: var(--naranja-ivvi); font-size: 1.1rem;">
                             {% if item.moneda == 'USD' %}${% else %}C${% endif %} {{ "{:,.2f}".format(item.total) }}
@@ -178,6 +165,22 @@
 
 {% block scripts %}
 <script>
+    let originalProductOptions = [];
+    document.addEventListener('DOMContentLoaded', function() {
+        const prodSelect = document.querySelector('select[name="producto_id[]"]');
+        if (prodSelect) {
+            for (let opt of prodSelect.options) {
+                originalProductOptions.push({
+                    value: opt.value,
+                    text: opt.text,
+                    sku: opt.getAttribute('data-sku') || "",
+                    factor: opt.getAttribute('data-factor') || "1",
+                    unidad: opt.getAttribute('data-unidad') || ""
+                });
+            }
+        }
+    });
+
     function checkProvider() {
         const select = document.getElementById('proveedor-select');
         const selectedOption = select.options[select.selectedIndex];
@@ -197,22 +200,57 @@
             monedaHidden.value = 'NIO';
         }
         
-        // Auto-selección de producto (Solo si es la primera fila y está vacía)
-        const firstProdSelect = document.querySelector('select[name="producto_id[]"]');
-        if (firstProdSelect && firstProdSelect.selectedIndex === 0) {
-            let targetSku = "";
-            if (name.includes('olmeca')) targetSku = "ACE-PRE-BULK";
-            if (name.includes('inducaribe')) targetSku = "ACE-EST-BULK";
+        // Filtrado dinámico de productos por Proveedor
+        const prodSelect = document.querySelector('select[name="producto_id[]"]');
+        if (prodSelect && originalProductOptions.length > 0) {
+            let filterType = "todos";
+            if (name.includes('olmeca')) filterType = "bulk-premium";
+            else if (name.includes('inducaribe')) filterType = "bulk-estandar";
+            else if (name.includes('envase')) filterType = "envases";
             
-            if (targetSku) {
-                for (let opt of firstProdSelect.options) {
-                    if (opt.dataset.sku === targetSku) {
-                        firstProdSelect.value = opt.value;
-                        updateRowUnit(firstProdSelect);
-                        break;
-                    }
+            // Vaciar select
+            prodSelect.innerHTML = "";
+            
+            let matchedOptions = [];
+            
+            originalProductOptions.forEach(opt => {
+                if (opt.value === "") {
+                    matchedOptions.push(opt);
+                    return;
                 }
+                
+                if (filterType === "bulk-premium") {
+                    if (opt.sku === "ACE-PRE-BULK") matchedOptions.push(opt);
+                } else if (filterType === "bulk-estandar") {
+                    if (opt.sku === "ACE-EST-BULK") matchedOptions.push(opt);
+                } else if (filterType === "envases") {
+                    if (opt.sku.startsWith("BID-") || opt.sku.startsWith("BOT-")) matchedOptions.push(opt);
+                } else {
+                    matchedOptions.push(opt);
+                }
+            });
+            
+            // Re-poblar select
+            matchedOptions.forEach(opt => {
+                const newOpt = document.createElement('option');
+                newOpt.value = opt.value;
+                newOpt.text = opt.text;
+                newOpt.setAttribute('data-sku', opt.sku);
+                newOpt.setAttribute('data-factor', opt.factor);
+                newOpt.setAttribute('data-unidad', opt.unidad);
+                prodSelect.appendChild(newOpt);
+            });
+            
+            // Auto-seleccionar si hay solo una opción válida (además del placeholder)
+            if (matchedOptions.length === 2) {
+                prodSelect.selectedIndex = 1; // Selecciona la opción después del placeholder
+            } else if (filterType === "envases") {
+                prodSelect.selectedIndex = 1; // Selecciona el primer envase disponible
+            } else {
+                prodSelect.selectedIndex = 0;
             }
+            
+            updateRowUnit(prodSelect);
         }
         
         updateCurrencySymbol();
@@ -353,17 +391,17 @@
     }
 
     function editCompra(id) {
-        if (!confirm('Esta acción anulará la compra actual y cargará los datos para una nueva corrección. ¿Continuar?')) return;
-        
-        fetch(`/api/compras/${id}`)
-            .then(res => res.json())
-            .then(data => {
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = `/compras/${id}/anular`;
-                document.body.appendChild(form);
-                form.submit();
-            });
+        confirmarAccion('Confirmar Edición', 'Esta acción anulará la compra actual y cargará los datos para una nueva corrección. ¿Continuar?', function() {
+            fetch(`/api/compras/${id}`)
+                .then(res => res.json())
+                .then(data => {
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = `/compras/${id}/anular`;
+                    document.body.appendChild(form);
+                    form.submit();
+                });
+        });
     }
 
     function toggleForm(forceOpen) {
