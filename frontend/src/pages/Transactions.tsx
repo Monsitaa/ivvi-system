@@ -307,7 +307,7 @@ export default function Transactions({ currentUser }: TransactionsProps) {
   };
 
   return (
-    <div className="flex-1 p-8 overflow-y-auto max-w-[1400px] mx-auto space-y-8 animate-fadeIn">
+    <div className="flex-1 p-4 sm:p-6 md:p-8 overflow-y-auto max-w-[1400px] mx-auto space-y-8 animate-fadeIn">
       {/* Notifications */}
       {notification && (
         <div className={`fixed bottom-6 right-6 z-50 p-4 rounded-xl shadow-xl flex items-center gap-3 border text-sm max-w-md animate-slideIn ${
@@ -331,11 +331,11 @@ export default function Transactions({ currentUser }: TransactionsProps) {
       </div>
 
       {/* Subtab selection */}
-      <div className="flex gap-2 border-b border-slate-200 dark:border-white/5 pb-px">
+      <div className="flex gap-2 border-b border-slate-200 dark:border-white/5 pb-px overflow-x-auto whitespace-nowrap scrollbar-none">
         {isAlmacen && (
           <button
             onClick={() => setActiveSubTab('compras')}
-            className={`pb-3 px-4 text-xs font-semibold uppercase tracking-wider border-b-2 transition-all flex items-center gap-2 cursor-pointer ${
+            className={`shrink-0 pb-3 px-4 text-xs font-semibold uppercase tracking-wider border-b-2 transition-all flex items-center gap-2 cursor-pointer ${
               activeSubTab === 'compras' 
                 ? 'border-ivvi-teal text-ivvi-teal' 
                 : 'border-transparent text-slate-400 hover:text-slate-600 dark:hover:text-white'
@@ -348,7 +348,7 @@ export default function Transactions({ currentUser }: TransactionsProps) {
         {isVendedor && (
           <button
             onClick={() => setActiveSubTab('ventas')}
-            className={`pb-3 px-4 text-xs font-semibold uppercase tracking-wider border-b-2 transition-all flex items-center gap-2 cursor-pointer ${
+            className={`shrink-0 pb-3 px-4 text-xs font-semibold uppercase tracking-wider border-b-2 transition-all flex items-center gap-2 cursor-pointer ${
               activeSubTab === 'ventas' 
                 ? 'border-ivvi-teal text-ivvi-teal' 
                 : 'border-transparent text-slate-400 hover:text-slate-600 dark:hover:text-white'
@@ -445,41 +445,43 @@ export default function Transactions({ currentUser }: TransactionsProps) {
                     </button>
                   </div>
 
-                  <div className="space-y-2.5">
-                    {lineas.map((linea, index) => (
-                      <div key={index} className="flex gap-3 items-center">
-                        <select 
-                          required className="flex-1 px-3 py-2 bg-slate-100 dark:bg-slate-950/85 rounded-xl border border-slate-200 dark:border-white/5 text-slate-800 dark:text-white focus:outline-none focus:border-ivvi-teal text-xs"
-                          value={linea.producto_id} onChange={(e) => updateLinea(index, 'producto_id', e.target.value)}
-                        >
-                          <option value="">Seleccione Material...</option>
-                          {productos.map(p => <option key={p.id} value={p.id}>{p.nombre} ({p.sku})</option>)}
-                        </select>
-                        
-                        <input
-                          type="number" required placeholder="Cant." min="1"
-                          className="w-20 px-3 py-2 bg-slate-100 dark:bg-slate-950/40 rounded-xl border border-slate-200 dark:border-white/5 text-slate-800 dark:text-white focus:outline-none focus:border-ivvi-teal text-xs"
-                          value={linea.cantidad} onChange={(e) => updateLinea(index, 'cantidad', e.target.value)}
-                        />
-                        
-                        <input
-                          type="number" required placeholder="Costo Unit." step="0.01" min="0.01"
-                          className="w-28 px-3 py-2 bg-slate-100 dark:bg-slate-950/40 rounded-xl border border-slate-200 dark:border-white/5 text-slate-800 dark:text-white focus:outline-none focus:border-ivvi-teal text-xs"
-                          value={linea.costo} onChange={(e) => updateLinea(index, 'costo', e.target.value)}
-                        />
+                  <div className="overflow-x-auto pb-2 scrollbar-none">
+                    <div className="space-y-2.5 min-w-[600px]">
+                      {lineas.map((linea, index) => (
+                        <div key={index} className="flex gap-3 items-center">
+                          <select 
+                            required className="flex-1 px-3 py-2 bg-slate-100 dark:bg-slate-950/85 rounded-xl border border-slate-200 dark:border-white/5 text-slate-800 dark:text-white focus:outline-none focus:border-ivvi-teal text-xs"
+                            value={linea.producto_id} onChange={(e) => updateLinea(index, 'producto_id', e.target.value)}
+                          >
+                            <option value="">Seleccione Material...</option>
+                            {productos.map(p => <option key={p.id} value={p.id}>{p.nombre} ({p.sku})</option>)}
+                          </select>
+                          
+                          <input
+                            type="number" required placeholder="Cant." min="1"
+                            className="w-20 px-3 py-2 bg-slate-100 dark:bg-slate-950/40 rounded-xl border border-slate-200 dark:border-white/5 text-slate-800 dark:text-white focus:outline-none focus:border-ivvi-teal text-xs shrink-0"
+                            value={linea.cantidad} onChange={(e) => updateLinea(index, 'cantidad', e.target.value)}
+                          />
+                          
+                          <input
+                            type="number" required placeholder="Costo Unit." step="0.01" min="0.01"
+                            className="w-28 px-3 py-2 bg-slate-100 dark:bg-slate-950/40 rounded-xl border border-slate-200 dark:border-white/5 text-slate-800 dark:text-white focus:outline-none focus:border-ivvi-teal text-xs shrink-0"
+                            value={linea.costo} onChange={(e) => updateLinea(index, 'costo', e.target.value)}
+                          />
 
-                        <span className="w-24 text-right text-xs font-bold text-slate-700 dark:text-white font-mono">
-                          {(getSubtotalLinea(linea)).toLocaleString('es-NI', { minimumFractionDigits: 2 })}
-                        </span>
+                          <span className="w-24 text-right text-xs font-bold text-slate-700 dark:text-white font-mono shrink-0">
+                            {(getSubtotalLinea(linea)).toLocaleString('es-NI', { minimumFractionDigits: 2 })}
+                          </span>
 
-                        <button 
-                          type="button" onClick={() => removeLinea(index)}
-                          className="p-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-xl transition-all cursor-pointer"
-                        >
-                          <Trash size={14} />
-                        </button>
-                      </div>
-                    ))}
+                          <button 
+                            type="button" onClick={() => removeLinea(index)}
+                            className="p-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-xl transition-all cursor-pointer shrink-0"
+                          >
+                            <Trash size={14} />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
 
@@ -538,49 +540,51 @@ export default function Transactions({ currentUser }: TransactionsProps) {
                     </button>
                   </div>
 
-                  <div className="space-y-2.5">
-                    {lineas.map((linea, index) => {
-                      const selectedProd = productos.find(p => p.id === parseInt(linea.producto_id));
-                      return (
-                        <div key={index} className="flex gap-3 items-center">
-                          <select 
-                            required className="flex-1 px-3 py-2 bg-slate-100 dark:bg-slate-950/85 rounded-xl border border-slate-200 dark:border-white/5 text-slate-800 dark:text-white focus:outline-none focus:border-ivvi-teal text-xs"
-                            value={linea.producto_id} onChange={(e) => updateLinea(index, 'producto_id', e.target.value)}
-                          >
-                            <option value="">Seleccione Producto Terminado...</option>
-                            {productos.map(p => (
-                              <option key={p.id} value={p.id} disabled={p.stock_actual <= 0}>
-                                {p.nombre} &mdash; (Stock: {p.stock_actual})
-                              </option>
-                            ))}
-                          </select>
-                          
-                          <input
-                            type="number" required placeholder="Cant." min="1"
-                            max={selectedProd ? selectedProd.stock_actual : undefined}
-                            className="w-24 px-3 py-2 bg-slate-100 dark:bg-slate-950/40 rounded-xl border border-slate-200 dark:border-white/5 text-slate-800 dark:text-white focus:outline-none focus:border-ivvi-teal text-xs"
-                            value={linea.cantidad} onChange={(e) => updateLinea(index, 'cantidad', e.target.value)}
-                          />
-                          
-                          <input
-                            type="text" disabled placeholder="Precio"
-                            className="w-28 px-3 py-2 bg-slate-100 dark:bg-slate-950/20 rounded-xl border border-slate-200 dark:border-white/5 text-slate-400 font-mono focus:outline-none text-xs"
-                            value={linea.producto_id ? `C$ ${linea.costo.toFixed(2)}` : ''}
-                          />
+                  <div className="overflow-x-auto pb-2 scrollbar-none">
+                    <div className="space-y-2.5 min-w-[650px]">
+                      {lineas.map((linea, index) => {
+                        const selectedProd = productos.find(p => p.id === parseInt(linea.producto_id));
+                        return (
+                          <div key={index} className="flex gap-3 items-center">
+                            <select 
+                              required className="flex-1 px-3 py-2 bg-slate-100 dark:bg-slate-950/85 rounded-xl border border-slate-200 dark:border-white/5 text-slate-800 dark:text-white focus:outline-none focus:border-ivvi-teal text-xs"
+                              value={linea.producto_id} onChange={(e) => updateLinea(index, 'producto_id', e.target.value)}
+                            >
+                              <option value="">Seleccione Producto Terminado...</option>
+                              {productos.map(p => (
+                                <option key={p.id} value={p.id} disabled={p.stock_actual <= 0}>
+                                  {p.nombre} &mdash; (Stock: {p.stock_actual})
+                                </option>
+                              ))}
+                            </select>
+                            
+                            <input
+                              type="number" required placeholder="Cant." min="1"
+                              max={selectedProd ? selectedProd.stock_actual : undefined}
+                              className="w-24 px-3 py-2 bg-slate-100 dark:bg-slate-950/40 rounded-xl border border-slate-200 dark:border-white/5 text-slate-800 dark:text-white focus:outline-none focus:border-ivvi-teal text-xs shrink-0"
+                              value={linea.cantidad} onChange={(e) => updateLinea(index, 'cantidad', e.target.value)}
+                            />
+                            
+                            <input
+                              type="text" disabled placeholder="Precio"
+                              className="w-28 px-3 py-2 bg-slate-100 dark:bg-slate-950/20 rounded-xl border border-slate-200 dark:border-white/5 text-slate-400 font-mono focus:outline-none text-xs shrink-0"
+                              value={linea.producto_id ? `C$ ${linea.costo.toFixed(2)}` : ''}
+                            />
 
-                          <span className="w-28 text-right text-xs font-bold text-slate-700 dark:text-white font-mono">
-                            C$ {(getSubtotalLinea(linea)).toLocaleString('es-NI', { minimumFractionDigits: 2 })}
-                          </span>
+                            <span className="w-28 text-right text-xs font-bold text-slate-700 dark:text-white font-mono shrink-0">
+                              C$ {(getSubtotalLinea(linea)).toLocaleString('es-NI', { minimumFractionDigits: 2 })}
+                            </span>
 
-                          <button 
-                            type="button" onClick={() => removeLinea(index)}
-                            className="p-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-xl transition-all cursor-pointer"
-                          >
-                            <Trash size={14} />
-                          </button>
-                        </div>
-                      );
-                    })}
+                            <button 
+                              type="button" onClick={() => removeLinea(index)}
+                              className="p-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-xl transition-all cursor-pointer shrink-0"
+                            >
+                              <Trash size={14} />
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
                 </div>
 

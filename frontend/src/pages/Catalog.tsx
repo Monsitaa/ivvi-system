@@ -231,7 +231,7 @@ export default function Catalog({ currentUser, initialTab = 'productos' }: Catal
   );
 
   return (
-    <div className="flex-1 p-8 overflow-y-auto max-w-[1400px] mx-auto space-y-8 animate-fadeIn">
+    <div className="flex-1 p-4 sm:p-6 md:p-8 overflow-y-auto max-w-[1400px] mx-auto space-y-8 animate-fadeIn">
       {/* Toast Notifications */}
       {notification && (
         <div className={`fixed bottom-6 right-6 z-50 p-4 rounded-xl shadow-xl flex items-center gap-3 border text-sm max-w-md animate-slideIn ${
@@ -315,12 +315,12 @@ export default function Catalog({ currentUser, initialTab = 'productos' }: Catal
                     )}
                   </div>
                   <div className="overflow-x-auto border border-slate-200 dark:border-white/5 rounded-xl p-4">
-                    <table className="w-full text-left text-xs">
+                    <table className="w-full text-left text-xs min-w-[500px]">
                       <thead>
                         <tr className="border-b border-slate-200 dark:border-white/5 text-slate-400 font-semibold pb-2">
-                          <th className="pb-2">Categoría</th>
-                          <th className="pb-2">Descripción</th>
-                          <th className="pb-2 text-right">Acciones</th>
+                          <th className="pb-2 whitespace-nowrap">Categoría</th>
+                          <th className="pb-2 whitespace-nowrap">Descripción</th>
+                          <th className="pb-2 text-right whitespace-nowrap">Acciones</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-100 dark:divide-white/5">
@@ -373,12 +373,12 @@ export default function Catalog({ currentUser, initialTab = 'productos' }: Catal
                     )}
                   </div>
                   <div className="overflow-x-auto border border-slate-200 dark:border-white/5 rounded-xl p-4">
-                    <table className="w-full text-left text-xs">
+                    <table className="w-full text-left text-xs min-w-[400px]">
                       <thead>
                         <tr className="border-b border-slate-200 dark:border-white/5 text-slate-400 font-semibold pb-2">
-                          <th className="pb-2">Nombre</th>
-                          <th className="pb-2">Abreviación</th>
-                          <th className="pb-2 text-right">Acciones</th>
+                          <th className="pb-2 whitespace-nowrap">Nombre</th>
+                          <th className="pb-2 whitespace-nowrap">Abreviación</th>
+                          <th className="pb-2 text-right whitespace-nowrap">Acciones</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-100 dark:divide-white/5">
@@ -417,28 +417,28 @@ export default function Catalog({ currentUser, initialTab = 'productos' }: Catal
 
             {/* 5. COLABORADORES TABLE */}
             {activeTab === 'colaboradores' && isAdmin && (
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs">
+              <div className="overflow-x-auto border border-slate-200 dark:border-white/5 rounded-xl">
+                <table className="w-full text-left text-xs min-w-[1000px]">
                   <thead>
                     <tr className="border-b border-slate-200 dark:border-white/5 text-slate-400 font-semibold pb-3">
-                      <th className="pb-3">Nombre Colaborador</th>
-                      <th className="pb-3">Rol Corporativo</th>
-                      <th className="pb-3">Cargo</th>
-                      <th className="pb-3">Email de Acceso</th>
-                      <th className="pb-3">Teléfono</th>
-                      <th className="pb-3 text-center">Acceso Web</th>
-                      <th className="pb-3 text-center">Estado</th>
-                      <th className="pb-3 text-right">Acciones</th>
+                      <th className="pb-3 whitespace-nowrap">Nombre Colaborador</th>
+                      <th className="pb-3 whitespace-nowrap">Rol Corporativo</th>
+                      <th className="pb-3 whitespace-nowrap">Cargo</th>
+                      <th className="pb-3 whitespace-nowrap">Email de Acceso</th>
+                      <th className="pb-3 whitespace-nowrap">Teléfono</th>
+                      <th className="pb-3 text-center whitespace-nowrap">Acceso Web</th>
+                      <th className="pb-3 text-center whitespace-nowrap">Estado</th>
+                      <th className="pb-3 text-right whitespace-nowrap">Acciones</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-white/5">
                     {filteredUsers.map(u => (
                       <tr key={u.id} className="text-slate-600 dark:text-slate-300 hover:bg-slate-50/50 dark:hover:bg-white/5 transition-all">
-                        <td className="py-3 font-semibold text-slate-800 dark:text-white">{u.nombre}</td>
-                        <td className="py-3 font-medium text-ivvi-teal">{u.rol}</td>
-                        <td className="py-3">{u.cargo || 'N/A'}</td>
-                        <td className="py-3">{u.email || 'N/A'}</td>
-                        <td className="py-3">{u.telefono || 'N/A'}</td>
+                        <td className="py-3 font-semibold text-slate-800 dark:text-white whitespace-nowrap">{u.nombre}</td>
+                        <td className="py-3 font-medium text-ivvi-teal whitespace-nowrap">{u.rol}</td>
+                        <td className="py-3 whitespace-nowrap">{u.cargo || 'N/A'}</td>
+                        <td className="py-3 whitespace-nowrap">{u.email || 'N/A'}</td>
+                        <td className="py-3 whitespace-nowrap">{u.telefono || 'N/A'}</td>
                         <td className="py-3 text-center">
                           <span className={`inline-flex items-center justify-center p-1 rounded-lg ${
                             u.tiene_acceso_web ? 'bg-emerald-500/10 text-emerald-500' : 'bg-slate-500/10 text-slate-400'

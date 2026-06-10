@@ -108,7 +108,7 @@ export default function Inventory({ currentUser }: InventoryProps) {
   };
 
   return (
-    <div className="flex-1 p-8 overflow-y-auto max-w-[1400px] mx-auto space-y-8 animate-fadeIn">
+    <div className="flex-1 p-4 sm:p-6 md:p-8 overflow-y-auto max-w-[1400px] mx-auto space-y-8 animate-fadeIn">
       {/* Toast notifications */}
       {notification && (
         <div className={`fixed bottom-6 right-6 z-50 p-4 rounded-xl shadow-xl flex items-center gap-3 border text-sm max-w-md animate-slideIn ${
@@ -156,10 +156,10 @@ export default function Inventory({ currentUser }: InventoryProps) {
       </div>
 
       {/* Navigation subtabs */}
-      <div className="flex gap-2 border-b border-slate-200 dark:border-white/5 pb-px">
+      <div className="flex gap-2 border-b border-slate-200 dark:border-white/5 pb-px overflow-x-auto whitespace-nowrap scrollbar-none">
         <button
           onClick={() => { setActiveSubTab('existencias'); setSearchTerm(''); }}
-          className={`pb-3 px-4 text-xs font-semibold uppercase tracking-wider border-b-2 transition-all flex items-center gap-2 cursor-pointer ${
+          className={`pb-3 px-4 text-xs font-semibold uppercase tracking-wider border-b-2 transition-all flex items-center gap-2 cursor-pointer shrink-0 ${
             activeSubTab === 'existencias' 
               ? 'border-ivvi-teal text-ivvi-teal' 
               : 'border-transparent text-slate-400 hover:text-slate-600 dark:hover:text-white'
@@ -172,7 +172,7 @@ export default function Inventory({ currentUser }: InventoryProps) {
         {isGerencia && (
           <button
             onClick={() => { setActiveSubTab('valoracion'); setSearchTerm(''); }}
-            className={`pb-3 px-4 text-xs font-semibold uppercase tracking-wider border-b-2 transition-all flex items-center gap-2 cursor-pointer ${
+            className={`pb-3 px-4 text-xs font-semibold uppercase tracking-wider border-b-2 transition-all flex items-center gap-2 cursor-pointer shrink-0 ${
               activeSubTab === 'valoracion' 
                 ? 'border-ivvi-teal text-ivvi-teal' 
                 : 'border-transparent text-slate-400 hover:text-slate-600 dark:hover:text-white'
@@ -330,26 +330,26 @@ export default function Inventory({ currentUser }: InventoryProps) {
               {/* Valuation items Table */}
               <div className="glass-card rounded-2xl p-6">
                 <div className="overflow-x-auto">
-                  <table className="w-full text-left text-xs">
+                  <table className="w-full text-left text-xs min-w-[800px]">
                     <thead>
                       <tr className="border-b border-slate-200 dark:border-white/5 text-slate-400 font-semibold pb-3">
-                        <th className="pb-3 pl-2">SKU</th>
-                        <th className="pb-3">Material / Producto Terminado</th>
-                        <th className="pb-3 text-center">Existencias</th>
-                        <th className="pb-3 text-right">Último Costo de Factura (NIO)</th>
-                        <th className="pb-3 text-right">Valor Total Estimado (NIO)</th>
+                        <th className="pb-3 pl-2 whitespace-nowrap">SKU</th>
+                        <th className="pb-3 whitespace-nowrap">Material / Producto Terminado</th>
+                        <th className="pb-3 text-center whitespace-nowrap">Existencias</th>
+                        <th className="pb-3 text-right whitespace-nowrap">Último Costo de Factura (NIO)</th>
+                        <th className="pb-3 text-right whitespace-nowrap">Valor Total Estimado (NIO)</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 dark:divide-white/5">
                       {filterValuation(valoracionItems).map((item, index) => (
                         <tr key={index} className="text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/[0.02] transition-colors">
-                          <td className="py-3 pl-2 font-semibold font-mono text-slate-800 dark:text-white">{item.sku}</td>
-                          <td className="py-3 font-medium">{item.producto}</td>
-                          <td className="py-3 text-center font-bold font-mono">
+                          <td className="py-3 pl-2 font-semibold font-mono text-slate-800 dark:text-white whitespace-nowrap">{item.sku}</td>
+                          <td className="py-3 font-medium whitespace-nowrap">{item.producto}</td>
+                          <td className="py-3 text-center font-bold font-mono whitespace-nowrap">
                             {item.stock} <span className="text-[10px] text-slate-400 font-normal">{item.unidad}</span>
                           </td>
-                          <td className="py-3 text-right font-semibold font-mono">C$ {item.ultimo_costo.toFixed(2)}</td>
-                          <td className="py-3 text-right font-black font-mono text-slate-800 dark:text-white">
+                          <td className="py-3 text-right font-semibold font-mono whitespace-nowrap">C$ {item.ultimo_costo.toFixed(2)}</td>
+                          <td className="py-3 text-right font-black font-mono text-slate-800 dark:text-white whitespace-nowrap">
                             C$ {item.valor_total.toLocaleString('es-NI', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </td>
                         </tr>

@@ -76,7 +76,7 @@ export default function Envasado({ currentUser: _currentUser }: EnvasadoProps) {
   };
 
   return (
-    <div className="flex-1 p-8 overflow-y-auto space-y-8 animate-fadeIn max-w-[1400px] mx-auto">
+    <div className="flex-1 p-4 sm:p-6 md:p-8 overflow-y-auto space-y-8 animate-fadeIn max-w-[1400px] mx-auto">
       {notification && (
         <div className={`fixed bottom-6 right-6 z-50 p-4 rounded-xl shadow-xl flex items-center gap-3 border text-sm max-w-md animate-slideIn bg-slate-900 border-ivvi-teal/30 text-ivvi-teal-light`}>
           <AlertCircle size={20} />
@@ -155,10 +155,10 @@ export default function Envasado({ currentUser: _currentUser }: EnvasadoProps) {
           <table className="w-full text-left text-xs min-w-[700px]">
             <thead>
               <tr className="border-b border-slate-200 dark:border-white/5 text-slate-400 font-semibold bg-slate-50/50 dark:bg-white/[0.02]">
-                <th className="p-4">Orden ID</th>
-                <th className="p-4">Fecha / Hora</th>
-                <th className="p-4 text-right">Cantidad Final Producida</th>
-                <th className="p-4">Estado</th>
+                <th className="p-4 whitespace-nowrap">Orden ID</th>
+                <th className="p-4 whitespace-nowrap">Fecha / Hora</th>
+                <th className="p-4 text-right whitespace-nowrap">Cantidad Final Producida</th>
+                <th className="p-4 whitespace-nowrap">Estado</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-white/5">
@@ -171,11 +171,11 @@ export default function Envasado({ currentUser: _currentUser }: EnvasadoProps) {
                       </span>
                     </td>
                     <td className="p-4 whitespace-nowrap text-slate-450 dark:text-slate-400 font-mono text-[10px]">{h.fecha}</td>
-                    <td className="p-4 text-right font-black font-mono text-emerald-500">
+                    <td className="p-4 text-right font-black font-mono text-emerald-500 whitespace-nowrap">
                       +{h.cantidad.toLocaleString('es-NI')} unidades
                     </td>
-                    <td className="p-4">
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                    <td className="p-4 whitespace-nowrap">
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 whitespace-nowrap">
                         Completado
                       </span>
                     </td>

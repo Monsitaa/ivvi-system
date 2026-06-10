@@ -184,7 +184,7 @@ export default function Productos({ currentUser }: ProductosProps) {
   const colSpan = canEdit ? 8 : 7;
 
   return (
-    <div className="flex-1 p-8 overflow-y-auto space-y-6 animate-fadeIn">
+    <div className="flex-1 p-4 sm:p-6 md:p-8 overflow-y-auto space-y-6 animate-fadeIn">
       {notification && (
         <div className={`fixed bottom-6 right-6 z-50 p-4 rounded-xl shadow-xl flex items-center gap-3 border text-sm max-w-md animate-slideIn ${
           notification.type === 'success' ? 'bg-slate-900 border-ivvi-teal/30 text-ivvi-teal-light' : 'bg-slate-900 border-red-500/30 text-red-400'
@@ -195,7 +195,7 @@ export default function Productos({ currentUser }: ProductosProps) {
       )}
 
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <div>
           <h1 className="text-2xl font-bold font-heading bg-gradient-to-r from-slate-900 to-slate-700 dark:from-white dark:to-slate-400 bg-clip-text text-transparent">
             Catálogo General
@@ -204,17 +204,17 @@ export default function Productos({ currentUser }: ProductosProps) {
         </div>
         {canEdit && (
           <button onClick={() => setTypeSelectionOpen(true)}
-            className="py-2.5 px-5 bg-gradient-to-r from-ivvi-teal to-ivvi-teal-dark hover:from-ivvi-teal-light hover:to-ivvi-teal text-white rounded-xl font-bold text-xs flex items-center gap-2 shadow-md shadow-ivvi-teal/10 cursor-pointer active:translate-y-0.5 transition-all">
+            className="py-2.5 px-5 bg-gradient-to-r from-ivvi-teal to-ivvi-teal-dark hover:from-ivvi-teal-light hover:to-ivvi-teal text-white rounded-xl font-bold text-xs flex items-center gap-2 shadow-md shadow-ivvi-teal/10 cursor-pointer active:translate-y-0.5 transition-all w-fit self-start sm:self-auto">
             <Plus size={14} /> Nuevo Registro
           </button>
         )}
       </div>
 
       {/* View Selector Tabs */}
-      <div className="flex gap-2">
+      <div className="flex gap-2 overflow-x-auto whitespace-nowrap pb-1 scrollbar-none">
         <button
           onClick={() => setVista('ventas')}
-          className={`py-2 px-4 rounded-full font-semibold text-xs flex items-center gap-2 transition-all cursor-pointer ${
+          className={`shrink-0 py-2 px-4 rounded-full font-semibold text-xs flex items-center gap-2 transition-all cursor-pointer ${
             vista === 'ventas'
               ? 'bg-ivvi-teal text-white shadow-md shadow-ivvi-teal/15'
               : 'bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-white/5 hover:bg-slate-200 dark:hover:bg-slate-800'
@@ -224,7 +224,7 @@ export default function Productos({ currentUser }: ProductosProps) {
         </button>
         <button
           onClick={() => setVista('planta')}
-          className={`py-2 px-4 rounded-full font-semibold text-xs flex items-center gap-2 transition-all cursor-pointer ${
+          className={`shrink-0 py-2 px-4 rounded-full font-semibold text-xs flex items-center gap-2 transition-all cursor-pointer ${
             vista === 'planta'
               ? 'bg-ivvi-teal text-white shadow-md shadow-ivvi-teal/15'
               : 'bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-white/5 hover:bg-slate-200 dark:hover:bg-slate-800'
@@ -244,9 +244,9 @@ export default function Productos({ currentUser }: ProductosProps) {
       {/* Table */}
       <div className="glass-card rounded-2xl overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
+          <table className="w-full text-left text-sm min-w-[900px]">
             <thead>
-              <tr className="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wider">
+              <tr className="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wider whitespace-nowrap">
                 <th className="p-4">SKU</th>
                 <th className="p-4">{vista === 'ventas' ? 'Producto' : 'Material / Insumo'}</th>
                 <th className="p-4">Categoría</th>
@@ -272,9 +272,9 @@ export default function Productos({ currentUser }: ProductosProps) {
                   </td>
                 </tr>
               ) : filtered.map(p => (
-                <tr key={p.id} className="hover:bg-slate-50/50 dark:hover:bg-white/[0.02] transition-colors">
+                <tr key={p.id} className="hover:bg-slate-50/50 dark:hover:bg-white/[0.02] transition-colors whitespace-nowrap">
                   <td className="p-4 font-mono text-xs text-ivvi-teal font-bold">{p.sku}</td>
-                  <td className="p-4 font-medium text-slate-800 dark:text-white">
+                  <td className="p-4 font-medium text-slate-800 dark:text-white whitespace-normal">
                     {vista === 'ventas' ? (
                       <span className="text-emerald-600 dark:text-emerald-400 font-semibold">{p.nombre}</span>
                     ) : (

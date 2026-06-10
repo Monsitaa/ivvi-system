@@ -194,7 +194,7 @@ export default function Kardex() {
   const filteredItems = getFilteredItems();
 
   return (
-    <div className="w-full min-w-0 flex-1 p-6 overflow-y-auto space-y-6 animate-fadeIn max-w-[1400px] mx-auto">
+    <div className="w-full min-w-0 flex-1 p-4 sm:p-6 md:p-8 overflow-y-auto space-y-6 animate-fadeIn max-w-[1400px] mx-auto">
       {notification && (
         <div className={`fixed bottom-6 right-6 z-50 p-4 rounded-xl shadow-xl flex items-center gap-3 border text-sm max-w-md animate-slideIn bg-slate-900 border-red-500/30 text-red-400`}>
           <AlertCircle size={20} />
@@ -258,43 +258,43 @@ export default function Kardex() {
             </div>
 
             {/* Quick Category Filters */}
-            <div className="flex bg-slate-100 dark:bg-slate-950/50 p-1 rounded-xl border border-slate-200/50 dark:border-white/5 overflow-x-auto gap-0.5 shrink-0">
+            <div className="flex bg-slate-100 dark:bg-slate-950/50 p-1 rounded-xl border border-slate-200/50 dark:border-white/5 overflow-x-auto gap-0.5 shrink-0 whitespace-nowrap scrollbar-none">
               <button 
                 onClick={() => setFilterType('TODO')}
-                className={`py-1 px-3 text-[10px] uppercase font-bold rounded-lg transition-all cursor-pointer whitespace-nowrap ${
+                className={`py-1 px-3 text-[10px] uppercase font-bold rounded-lg transition-all cursor-pointer whitespace-nowrap shrink-0 ${
                   filterType === 'TODO'
                     ? 'bg-white dark:bg-slate-800 text-slate-800 dark:text-white shadow-sm'
-                    : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-350'
+                    : 'text-slate-400 hover:text-slate-655 dark:hover:text-slate-350'
                 }`}
               >
                 Ver Todo
               </button>
               <button 
                 onClick={() => setFilterType('ENTRADA')}
-                className={`py-1 px-3 text-[10px] uppercase font-bold rounded-lg transition-all cursor-pointer whitespace-nowrap ${
+                className={`py-1 px-3 text-[10px] uppercase font-bold rounded-lg transition-all cursor-pointer whitespace-nowrap shrink-0 ${
                   filterType === 'ENTRADA'
                     ? 'bg-emerald-500/10 text-emerald-500 dark:text-emerald-400 shadow-sm border border-emerald-500/20'
-                    : 'text-slate-400 hover:text-slate-650 dark:hover:text-slate-300'
+                    : 'text-slate-400 hover:text-slate-655 dark:hover:text-slate-300'
                 }`}
               >
                 Entradas
               </button>
               <button 
                 onClick={() => setFilterType('VENTA')}
-                className={`py-1 px-3 text-[10px] uppercase font-bold rounded-lg transition-all cursor-pointer whitespace-nowrap ${
+                className={`py-1 px-3 text-[10px] uppercase font-bold rounded-lg transition-all cursor-pointer whitespace-nowrap shrink-0 ${
                   filterType === 'VENTA'
                     ? 'bg-blue-500/10 text-blue-500 dark:text-blue-400 shadow-sm border border-blue-500/20'
-                    : 'text-slate-400 hover:text-slate-650 dark:hover:text-slate-300'
+                    : 'text-slate-400 hover:text-slate-655 dark:hover:text-slate-300'
                 }`}
               >
                 Solo Ventas
               </button>
               <button 
                 onClick={() => setFilterType('AJUSTE')}
-                className={`py-1 px-3 text-[10px] uppercase font-bold rounded-lg transition-all cursor-pointer whitespace-nowrap ${
+                className={`py-1 px-3 text-[10px] uppercase font-bold rounded-lg transition-all cursor-pointer whitespace-nowrap shrink-0 ${
                   filterType === 'AJUSTE'
                     ? 'bg-red-500/10 text-red-500 dark:text-red-400 shadow-sm border border-red-500/20'
-                    : 'text-slate-400 hover:text-slate-650 dark:hover:text-slate-300'
+                    : 'text-slate-400 hover:text-slate-655 dark:hover:text-slate-300'
                 }`}
               >
                 Mermas / Ajustes
@@ -314,14 +314,14 @@ export default function Kardex() {
             <table className="w-full text-left text-xs min-w-[980px]">
               <thead>
                 <tr className="border-b border-slate-200 dark:border-white/5 text-slate-455 dark:text-slate-400 text-[10px] font-bold uppercase tracking-wider bg-slate-50/50 dark:bg-white/[0.02]">
-                  <th className="py-3 px-4">Fecha / Hora</th>
-                  <th className="py-3 px-4 text-center">Tipo de Flujo</th>
-                  <th className="py-3 px-4">Documento / REF</th>
-                  <th className="py-3 px-4">Producto / Material</th>
-                  <th className="py-3 px-4 text-center">Variación</th>
-                  <th className="py-3 px-4">Responsable</th>
-                  <th className="py-3 px-4">Observaciones Técnicas</th>
-                  <th className="py-3 px-4 text-center">Acciones</th>
+                  <th className="py-3 px-4 whitespace-nowrap">Fecha / Hora</th>
+                  <th className="py-3 px-4 text-center whitespace-nowrap">Tipo de Flujo</th>
+                  <th className="py-3 px-4 whitespace-nowrap">Documento / REF</th>
+                  <th className="py-3 px-4 whitespace-nowrap">Producto / Material</th>
+                  <th className="py-3 px-4 text-center whitespace-nowrap">Variación</th>
+                  <th className="py-3 px-4 whitespace-nowrap">Responsable</th>
+                  <th className="py-3 px-4 whitespace-nowrap">Observaciones Técnicas</th>
+                  <th className="py-3 px-4 text-center whitespace-nowrap">Acciones</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-white/5">
@@ -356,8 +356,8 @@ export default function Kardex() {
                         </td>
                         <td className="py-2.5 px-4">
                           <div>
-                            <strong className="text-slate-800 dark:text-white block font-heading">{item.producto}</strong>
-                            <span className="text-[10px] text-slate-455 dark:text-slate-500 font-semibold">{item.sku}</span>
+                            <strong className="text-slate-800 dark:text-white block font-heading whitespace-nowrap">{item.producto}</strong>
+                            <span className="text-[10px] text-slate-455 dark:text-slate-500 font-semibold whitespace-nowrap">{item.sku}</span>
                           </div>
                         </td>
                         <td className="py-2.5 px-4 text-center whitespace-nowrap">

@@ -131,7 +131,7 @@ export default function Ventas({ currentUser }: VentasProps) {
   };
 
   return (
-    <div className="flex-1 p-8 overflow-y-auto space-y-8 animate-fadeIn max-w-[1400px] mx-auto">
+    <div className="flex-1 p-4 sm:p-6 md:p-8 overflow-y-auto space-y-8 animate-fadeIn max-w-[1400px] mx-auto">
       {notification && (
         <div className={`fixed bottom-6 right-6 z-50 p-4 rounded-xl shadow-xl flex items-center gap-3 border text-sm max-w-md animate-slideIn bg-slate-900 border-ivvi-teal/30 text-ivvi-teal-light`}>
           <AlertCircle size={20} />
@@ -168,29 +168,29 @@ export default function Ventas({ currentUser }: VentasProps) {
           <table className="w-full text-left text-xs min-w-[800px]">
             <thead>
               <tr className="border-b border-slate-200 dark:border-white/5 text-slate-400 font-semibold bg-slate-50/50 dark:bg-white/[0.02]">
-                <th className="p-4">Nº Factura</th>
-                <th className="p-4">Fecha / Hora</th>
-                <th className="p-4">Cliente</th>
-                <th className="p-4 text-right">Total</th>
-                <th className="p-4 text-center">Estado</th>
-                <th className="p-4 text-center">Acciones</th>
+                <th className="p-4 whitespace-nowrap">Nº Factura</th>
+                <th className="p-4 whitespace-nowrap">Fecha / Hora</th>
+                <th className="p-4 whitespace-nowrap">Cliente</th>
+                <th className="p-4 text-right whitespace-nowrap">Total</th>
+                <th className="p-4 text-center whitespace-nowrap">Estado</th>
+                <th className="p-4 text-center whitespace-nowrap">Acciones</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-white/5">
               {ventas.length > 0 ? (
                 ventas.map(v => (
-                  <tr key={v.id} className="text-slate-600 dark:text-slate-300 hover:bg-slate-100/30 dark:hover:bg-white/[0.01] transition-all">
-                    <td className="p-4 font-mono whitespace-nowrap">
-                      <span className="bg-slate-100 dark:bg-slate-950/80 px-2 py-1 rounded-lg border border-slate-200/50 dark:border-white/5 font-semibold text-slate-800 dark:text-slate-200">
-                        {v.numero_factura}
-                      </span>
-                    </td>
-                    <td className="p-4 whitespace-nowrap text-slate-450 dark:text-slate-400 font-mono text-[10px]">{v.fecha}</td>
-                    <td className="p-4 font-medium text-slate-800 dark:text-white">{v.cliente}</td>
-                    <td className="p-4 text-right font-black font-mono text-slate-800 dark:text-white">
-                      C$ {v.total.toLocaleString('es-NI', { minimumFractionDigits: 2 })}
-                    </td>
-                    <td className="p-4 text-center whitespace-nowrap">
+                   <tr key={v.id} className="text-slate-600 dark:text-slate-300 hover:bg-slate-100/30 dark:hover:bg-white/[0.01] transition-all">
+                     <td className="p-4 font-mono whitespace-nowrap">
+                       <span className="bg-slate-100 dark:bg-slate-950/80 px-2 py-1 rounded-lg border border-slate-200/50 dark:border-white/5 font-semibold text-slate-800 dark:text-slate-200">
+                         {v.numero_factura}
+                       </span>
+                     </td>
+                     <td className="p-4 whitespace-nowrap text-slate-450 dark:text-slate-400 font-mono text-[10px]">{v.fecha}</td>
+                     <td className="p-4 font-medium text-slate-800 dark:text-white whitespace-nowrap">{v.cliente}</td>
+                     <td className="p-4 text-right font-black font-mono text-slate-800 dark:text-white whitespace-nowrap">
+                       C$ {v.total.toLocaleString('es-NI', { minimumFractionDigits: 2 })}
+                     </td>
+                     <td className="p-4 text-center whitespace-nowrap">
                       <span className={`text-[10px] font-bold px-2.5 py-1 rounded-lg border ${
                         v.estado === 'Completada'
                           ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'

@@ -268,7 +268,7 @@ export default function Ajustes({ currentUser }: AjustesProps) {
   }
 
   return (
-    <div className="flex-1 p-8 overflow-y-auto max-w-[1400px] mx-auto space-y-8 animate-fadeIn">
+    <div className="flex-1 p-4 sm:p-6 md:p-8 overflow-y-auto max-w-[1400px] mx-auto space-y-8 animate-fadeIn">
       {/* Toast Notification */}
       {notification && (
         <div className={`fixed bottom-6 right-6 z-50 p-4 rounded-xl shadow-xl flex items-center gap-3 border text-sm max-w-md animate-slideIn ${
@@ -304,10 +304,10 @@ export default function Ajustes({ currentUser }: AjustesProps) {
       </div>
 
       {/* Navigation subtabs */}
-      <div className="flex gap-2 border-b border-slate-200 dark:border-white/5 pb-px">
+      <div className="flex gap-2 border-b border-slate-200 dark:border-white/5 pb-px overflow-x-auto whitespace-nowrap scrollbar-none">
         <button
           onClick={() => { setActiveTab('ajustes'); setSearchTerm(''); }}
-          className={`pb-3 px-4 text-xs font-semibold uppercase tracking-wider border-b-2 transition-all flex items-center gap-2 cursor-pointer ${
+          className={`pb-3 px-4 text-xs font-semibold uppercase tracking-wider border-b-2 transition-all flex items-center gap-2 cursor-pointer shrink-0 ${
             activeTab === 'ajustes' 
               ? 'border-ivvi-teal text-ivvi-teal' 
               : 'border-transparent text-slate-400 hover:text-slate-600 dark:hover:text-white'
@@ -319,7 +319,7 @@ export default function Ajustes({ currentUser }: AjustesProps) {
 
         <button
           onClick={() => { setActiveTab('retornos'); setSearchTerm(''); }}
-          className={`pb-3 px-4 text-xs font-semibold uppercase tracking-wider border-b-2 transition-all flex items-center gap-2 cursor-pointer ${
+          className={`pb-3 px-4 text-xs font-semibold uppercase tracking-wider border-b-2 transition-all flex items-center gap-2 cursor-pointer shrink-0 ${
             activeTab === 'retornos' 
               ? 'border-ivvi-teal text-ivvi-teal' 
               : 'border-transparent text-slate-400 hover:text-slate-600 dark:hover:text-white'
@@ -418,21 +418,21 @@ export default function Ajustes({ currentUser }: AjustesProps) {
                 <table className="w-full text-left text-xs min-w-[800px]">
                   <thead>
                     <tr className="border-b border-slate-200 dark:border-white/5 text-slate-400 font-semibold bg-slate-50/50 dark:bg-white/[0.02]">
-                      <th className="p-4 pl-6">Fecha</th>
-                      <th className="p-4">SKU</th>
-                      <th className="p-4">Producto</th>
-                      <th className="p-4 text-center">Tipo</th>
-                      <th className="p-4 text-center">Cantidad</th>
-                      <th className="p-4 pl-6">Justificación / Responsable</th>
+                      <th className="p-4 pl-6 whitespace-nowrap">Fecha</th>
+                      <th className="p-4 whitespace-nowrap">SKU</th>
+                      <th className="p-4 whitespace-nowrap">Producto</th>
+                      <th className="p-4 text-center whitespace-nowrap">Tipo</th>
+                      <th className="p-4 text-center whitespace-nowrap">Cantidad</th>
+                      <th className="p-4 pl-6 whitespace-nowrap">Justificación / Responsable</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-white/5">
                     {filteredAjustes.map((a) => (
                       <tr key={a.id} className="text-slate-600 dark:text-slate-300 hover:bg-slate-100/30 dark:hover:bg-white/[0.01] transition-all">
                         <td className="p-4 pl-6 text-slate-450 dark:text-slate-400 font-mono text-[10px] whitespace-nowrap">{a.fecha}</td>
-                        <td className="p-4 font-bold font-mono text-slate-800 dark:text-white">{a.sku}</td>
-                        <td className="p-4 font-medium" title={a.producto}>{a.producto}</td>
-                        <td className="p-4 text-center">
+                        <td className="p-4 font-bold font-mono text-slate-800 dark:text-white whitespace-nowrap">{a.sku}</td>
+                        <td className="p-4 font-medium whitespace-nowrap" title={a.producto}>{a.producto}</td>
+                        <td className="p-4 text-center whitespace-nowrap">
                           <span className={`px-2.5 py-1 rounded-lg text-[10px] font-bold inline-flex items-center gap-1 border ${
                             a.tipo_movimiento === 'ENTRADA'
                               ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
@@ -446,16 +446,16 @@ export default function Ajustes({ currentUser }: AjustesProps) {
                             {a.tipo_movimiento}
                           </span>
                         </td>
-                        <td className={`p-4 text-center font-black font-mono text-sm ${
+                        <td className={`p-4 text-center font-black font-mono text-sm whitespace-nowrap ${
                           a.tipo_movimiento === 'ENTRADA' ? 'text-emerald-500' : 'text-red-500'
                         }`}>
                           {a.tipo_movimiento === 'ENTRADA' ? '+' : '-'}{a.cantidad.toLocaleString('es-NI')}
                         </td>
-                        <td className="p-4 pl-6">
+                        <td className="p-4 pl-6 min-w-[200px]">
                           <div className="font-medium text-slate-800 dark:text-white" title={a.observacion}>
                             {a.observacion}
                           </div>
-                          <div className="text-[10px] text-slate-400 font-semibold mt-0.5">
+                          <div className="text-[10px] text-slate-400 font-semibold mt-0.5 whitespace-nowrap">
                             Autorizado por: <span className="text-slate-500 dark:text-slate-300 font-bold">{a.autorizado_por}</span>
                           </div>
                         </td>
@@ -695,27 +695,27 @@ export default function Ajustes({ currentUser }: AjustesProps) {
                 <table className="w-full text-left text-xs min-w-[800px]">
                   <thead>
                     <tr className="border-b border-slate-200 dark:border-white/5 text-slate-400 font-semibold bg-slate-50/50 dark:bg-white/[0.02]">
-                      <th className="p-4 pl-6">Fecha</th>
-                      <th className="p-4">Cliente</th>
-                      <th className="p-4 text-center">Total Devuelto</th>
-                      <th className="p-4 text-center">Buenos (+Stock)</th>
-                      <th className="p-4 text-center">Dañados (Pérdidas)</th>
-                      <th className="p-4 pl-6">Observaciones / Autor</th>
+                      <th className="p-4 pl-6 whitespace-nowrap">Fecha</th>
+                      <th className="p-4 whitespace-nowrap">Cliente</th>
+                      <th className="p-4 text-center whitespace-nowrap">Total Devuelto</th>
+                      <th className="p-4 text-center whitespace-nowrap">Buenos (+Stock)</th>
+                      <th className="p-4 text-center whitespace-nowrap">Dañados (Pérdidas)</th>
+                      <th className="p-4 pl-6 whitespace-nowrap">Observaciones / Autor</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-white/5">
                     {filteredRetornos.map((r) => (
                       <tr key={r.id} className="text-slate-600 dark:text-slate-300 hover:bg-slate-100/30 dark:hover:bg-white/[0.01] transition-all">
                         <td className="p-4 pl-6 text-slate-450 dark:text-slate-400 font-mono text-[10px] whitespace-nowrap">{r.fecha}</td>
-                        <td className="p-4 font-bold text-slate-800 dark:text-white" title={r.cliente}>{r.cliente}</td>
-                        <td className="p-4 text-center font-bold font-mono text-slate-800 dark:text-white">{r.cantidad_total.toLocaleString('es-NI')}</td>
-                        <td className="p-4 text-center font-bold font-mono text-emerald-500">+{r.cantidad_buenos.toLocaleString('es-NI')}</td>
-                        <td className="p-4 text-center font-bold font-mono text-red-500">-{r.cantidad_danados.toLocaleString('es-NI')}</td>
-                        <td className="p-4 pl-6">
+                        <td className="p-4 font-bold text-slate-800 dark:text-white whitespace-nowrap" title={r.cliente}>{r.cliente}</td>
+                        <td className="p-4 text-center font-bold font-mono text-slate-800 dark:text-white whitespace-nowrap">{r.cantidad_total.toLocaleString('es-NI')}</td>
+                        <td className="p-4 text-center font-bold font-mono text-emerald-500 whitespace-nowrap">+{r.cantidad_buenos.toLocaleString('es-NI')}</td>
+                        <td className="p-4 text-center font-bold font-mono text-red-500 whitespace-nowrap">-{r.cantidad_danados.toLocaleString('es-NI')}</td>
+                        <td className="p-4 pl-6 min-w-[200px]">
                           <div className="font-medium text-slate-800 dark:text-white" title={r.observaciones}>
                             {r.observaciones}
                           </div>
-                          <div className="text-[10px] text-slate-450 dark:text-slate-400 font-semibold mt-0.5">
+                          <div className="text-[10px] text-slate-455 dark:text-slate-400 font-semibold mt-0.5 whitespace-nowrap">
                             Recibido por: <span className="text-slate-500 dark:text-slate-300 font-bold">{r.autorizado_por}</span>
                           </div>
                         </td>

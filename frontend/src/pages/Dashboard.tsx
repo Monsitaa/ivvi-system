@@ -130,7 +130,7 @@ export default function Dashboard() {
   ].filter(p => p.value > 0);
 
   return (
-    <div className="flex-1 p-8 overflow-y-auto max-w-[1400px] mx-auto space-y-8 animate-fadeIn">
+    <div className="flex-1 p-4 sm:p-6 md:p-8 overflow-y-auto max-w-[1400px] mx-auto space-y-8 animate-fadeIn">
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
@@ -389,24 +389,24 @@ export default function Dashboard() {
           </div>
 
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
+            <table className="w-full text-left text-xs min-w-[650px]">
               <thead>
                 <tr className="border-b border-slate-200 dark:border-white/5 text-slate-400 font-semibold">
-                  <th className="pb-3">Factura</th>
-                  <th className="pb-3">Fecha</th>
-                  <th className="pb-3">Cliente</th>
-                  <th className="pb-3">Vendedor</th>
-                  <th className="pb-3 text-right">Monto (C$)</th>
+                  <th className="pb-3 whitespace-nowrap">Factura</th>
+                  <th className="pb-3 whitespace-nowrap">Fecha</th>
+                  <th className="pb-3 whitespace-nowrap">Cliente</th>
+                  <th className="pb-3 whitespace-nowrap">Vendedor</th>
+                  <th className="pb-3 text-right whitespace-nowrap">Monto (C$)</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-white/5">
                 {data.ultimas_ventas.length > 0 ? (
                   data.ultimas_ventas.map((v) => (
                     <tr key={v.id} className="text-slate-600 dark:text-slate-300">
-                      <td className="py-3.5 font-semibold font-mono text-slate-800 dark:text-white">{v.numero_factura}</td>
-                      <td className="py-3.5">{v.fecha}</td>
-                      <td className="py-3.5 truncate max-w-[150px]">{v.cliente}</td>
-                      <td className="py-3.5">{v.vendedor}</td>
+                      <td className="py-3.5 font-semibold font-mono text-slate-800 dark:text-white whitespace-nowrap">{v.numero_factura}</td>
+                      <td className="py-3.5 whitespace-nowrap">{v.fecha}</td>
+                      <td className="py-3.5 truncate max-w-[150px] whitespace-nowrap">{v.cliente}</td>
+                      <td className="py-3.5 whitespace-nowrap">{v.vendedor}</td>
                       <td className="py-3.5 text-right font-bold text-slate-800 dark:text-white">
                         {v.total.toLocaleString('es-NI', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </td>

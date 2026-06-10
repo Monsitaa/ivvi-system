@@ -199,7 +199,7 @@ export default function Compras({ currentUser }: ComprasProps) {
   };
 
   return (
-    <div className="flex-1 p-8 overflow-y-auto space-y-8 animate-fadeIn max-w-[1400px] mx-auto">
+    <div className="flex-1 p-4 sm:p-6 md:p-8 overflow-y-auto space-y-8 animate-fadeIn max-w-[1400px] mx-auto">
       {notification && (
         <div className={`fixed bottom-6 right-6 z-50 p-4 rounded-xl shadow-xl flex items-center gap-3 border text-sm max-w-md animate-slideIn bg-slate-900 border-ivvi-teal/30 text-ivvi-teal-light`}>
           <AlertCircle size={20} />
@@ -236,13 +236,13 @@ export default function Compras({ currentUser }: ComprasProps) {
           <table className="w-full text-left text-xs min-w-[900px]">
             <thead>
               <tr className="border-b border-slate-200 dark:border-white/5 text-slate-400 font-semibold bg-slate-50/50 dark:bg-white/[0.02]">
-                <th className="p-4">Nº Factura</th>
-                <th className="p-4">Fecha / Hora</th>
-                <th className="p-4">Proveedor</th>
-                <th className="p-4 text-right">Monto Total</th>
-                <th className="p-4 text-center">Tasa Cambio</th>
-                <th className="p-4 text-center">Estado</th>
-                <th className="p-4 text-center">Acciones</th>
+                <th className="p-4 whitespace-nowrap">Nº Factura</th>
+                <th className="p-4 whitespace-nowrap">Fecha / Hora</th>
+                <th className="p-4 whitespace-nowrap">Proveedor</th>
+                <th className="p-4 text-right whitespace-nowrap">Monto Total</th>
+                <th className="p-4 text-center whitespace-nowrap">Tasa Cambio</th>
+                <th className="p-4 text-center whitespace-nowrap">Estado</th>
+                <th className="p-4 text-center whitespace-nowrap">Acciones</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-white/5">
@@ -255,11 +255,11 @@ export default function Compras({ currentUser }: ComprasProps) {
                       </span>
                     </td>
                     <td className="p-4 whitespace-nowrap text-slate-450 dark:text-slate-400 font-mono text-[10px]">{c.fecha}</td>
-                    <td className="p-4 font-medium text-slate-800 dark:text-white">{c.proveedor}</td>
-                    <td className="p-4 text-right font-black font-mono text-slate-800 dark:text-white">
+                    <td className="p-4 font-medium text-slate-800 dark:text-white whitespace-nowrap">{c.proveedor}</td>
+                    <td className="p-4 text-right font-black font-mono text-slate-800 dark:text-white whitespace-nowrap">
                       {c.moneda} {c.total.toLocaleString('es-NI', { minimumFractionDigits: 2 })}
                     </td>
-                    <td className="p-4 text-center font-mono text-slate-500 font-bold">{c.moneda === 'NIO' ? 'N/A' : `C$ ${(c.total_base / c.total).toFixed(4)}`}</td>
+                    <td className="p-4 text-center font-mono text-slate-500 font-bold whitespace-nowrap">{c.moneda === 'NIO' ? 'N/A' : `C$ ${(c.total_base / c.total).toFixed(4)}`}</td>
                     <td className="p-4 text-center whitespace-nowrap">
                       <span className={`text-[10px] font-bold px-2.5 py-1 rounded-lg border ${
                         c.estado === 'Completada'

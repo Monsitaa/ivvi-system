@@ -42,24 +42,24 @@ export default function Proveedores({ currentUser }: ProveedoresProps) {
   const filtered = items.filter(p => p.razon_social.toLowerCase().includes(searchQuery.toLowerCase()) || (p.ruc || '').includes(searchQuery));
 
   return (
-    <div className="flex-1 p-8 overflow-y-auto space-y-6 animate-fadeIn">
+    <div className="flex-1 p-4 sm:p-6 md:p-8 overflow-y-auto space-y-6 animate-fadeIn">
       {notification && (<div className={`fixed bottom-6 right-6 z-50 p-4 rounded-xl shadow-xl flex items-center gap-3 border text-sm max-w-md animate-slideIn ${notification.type === 'success' ? 'bg-slate-900 border-ivvi-teal/30 text-ivvi-teal-light' : 'bg-slate-900 border-red-500/30 text-red-400'}`}><AlertCircle size={20} /><span>{notification.message}</span></div>)}
       <div className="flex justify-between items-center">
         <div><h1 className="text-2xl font-bold font-heading bg-gradient-to-r from-slate-900 to-slate-700 dark:from-white dark:to-slate-400 bg-clip-text text-transparent">Proveedores</h1><p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Registro de proveedores de materia prima e insumos.</p></div>
         {canEdit && (<button onClick={() => { resetForm(); setFormOpen(true); }} className="py-2.5 px-5 bg-gradient-to-r from-ivvi-teal to-ivvi-teal-dark hover:from-ivvi-teal-light hover:to-ivvi-teal text-white rounded-xl font-bold text-xs flex items-center gap-2 shadow-md shadow-ivvi-teal/10 cursor-pointer active:translate-y-0.5 transition-all"><Plus size={14} /> Nuevo Proveedor</button>)}
       </div>
       <div className="relative max-w-md"><Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" /><input type="text" placeholder="Buscar por razón social o RUC..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full pl-10 pr-4 py-2.5 bg-slate-100 hover:bg-slate-200/70 dark:bg-slate-950/40 rounded-xl border border-slate-200 dark:border-white/5 text-slate-800 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-ivvi-teal text-sm" /></div>
-      <div className="glass-card rounded-2xl overflow-hidden"><div className="overflow-x-auto"><table className="w-full text-left text-sm">
-        <thead><tr className="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wider"><th className="p-4">Razón Social</th><th className="p-4">RUC</th><th className="p-4">Teléfono</th><th className="p-4">Email</th><th className="p-4 text-center">Estado</th>{canEdit && <th className="p-4 text-center">Acciones</th>}</tr></thead>
+      <div className="glass-card rounded-2xl overflow-hidden"><div className="overflow-x-auto"><table className="w-full text-left text-sm min-w-[800px]">
+        <thead><tr className="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wider"><th className="p-4 whitespace-nowrap">Razón Social</th><th className="p-4 whitespace-nowrap">RUC</th><th className="p-4 whitespace-nowrap">Teléfono</th><th className="p-4 whitespace-nowrap">Email</th><th className="p-4 text-center whitespace-nowrap">Estado</th>{canEdit && <th className="p-4 text-center whitespace-nowrap">Acciones</th>}</tr></thead>
         <tbody className="divide-y divide-slate-100 dark:divide-white/5">
           {loading ? <tr><td colSpan={6} className="p-8 text-center"><div className="w-6 h-6 border-2 border-ivvi-teal/30 border-t-ivvi-teal rounded-full animate-spin mx-auto"></div></td></tr>
           : filtered.length === 0 ? <tr><td colSpan={6} className="p-8 text-center text-slate-500 text-xs">Sin proveedores.</td></tr>
           : filtered.map(p => (
             <tr key={p.id} className="hover:bg-slate-50/50 dark:hover:bg-white/[0.02] transition-colors">
-              <td className="p-4 font-medium text-slate-800 dark:text-white">{p.razon_social}</td>
-              <td className="p-4 font-mono text-xs text-slate-500 dark:text-slate-400">{p.ruc || 'N/A'}</td>
-              <td className="p-4 text-xs text-slate-600 dark:text-slate-400">{p.telefono || '-'}</td>
-              <td className="p-4 text-xs text-slate-600 dark:text-slate-400">{p.email || '-'}</td>
+              <td className="p-4 font-medium text-slate-800 dark:text-white whitespace-nowrap">{p.razon_social}</td>
+              <td className="p-4 font-mono text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap">{p.ruc || 'N/A'}</td>
+              <td className="p-4 text-xs text-slate-600 dark:text-slate-400 whitespace-nowrap">{p.telefono || '-'}</td>
+              <td className="p-4 text-xs text-slate-600 dark:text-slate-400 whitespace-nowrap">{p.email || '-'}</td>
               <td className="p-4 text-center"><span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${p.estado === 'Activo' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-slate-500/10 text-slate-400'}`}>{p.estado}</span></td>
               {canEdit && <td className="p-4 text-center"><div className="flex items-center justify-center gap-1.5">
                 <button onClick={() => startEdit(p)} className="p-1.5 hover:bg-slate-100 dark:hover:bg-white/10 rounded-lg text-slate-400 hover:text-ivvi-teal transition-all cursor-pointer"><Edit2 size={14} /></button>

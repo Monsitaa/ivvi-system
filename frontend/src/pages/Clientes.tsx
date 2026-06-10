@@ -61,7 +61,7 @@ export default function Clientes({ currentUser }: ClientesProps) {
   const filtered = items.filter(c => c.nombre.toLowerCase().includes(searchQuery.toLowerCase()) || (c.ruc || '').toLowerCase().includes(searchQuery.toLowerCase()));
 
   return (
-    <div className="flex-1 p-8 overflow-y-auto space-y-6 animate-fadeIn">
+    <div className="flex-1 p-4 sm:p-6 md:p-8 overflow-y-auto space-y-6 animate-fadeIn">
       {notification && (
         <div className={`fixed bottom-6 right-6 z-50 p-4 rounded-xl shadow-xl flex items-center gap-3 border text-sm max-w-md animate-slideIn ${notification.type === 'success' ? 'bg-slate-900 border-ivvi-teal/30 text-ivvi-teal-light' : 'bg-slate-900 border-red-500/30 text-red-400'}`}>
           <AlertCircle size={20} /><span>{notification.message}</span>
@@ -85,10 +85,10 @@ export default function Clientes({ currentUser }: ClientesProps) {
       </div>
       <div className="glass-card rounded-2xl overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
+          <table className="w-full text-left text-sm min-w-[850px]">
             <thead>
               <tr className="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wider">
-                <th className="p-4">Nombre</th><th className="p-4">RUC</th><th className="p-4">Teléfono</th><th className="p-4">Email</th><th className="p-4">Dirección</th><th className="p-4 text-center">Estado</th>{canEdit && <th className="p-4 text-center">Acciones</th>}
+                <th className="p-4 whitespace-nowrap">Nombre</th><th className="p-4 whitespace-nowrap">RUC</th><th className="p-4 whitespace-nowrap">Teléfono</th><th className="p-4 whitespace-nowrap">Email</th><th className="p-4 whitespace-nowrap">Dirección</th><th className="p-4 text-center whitespace-nowrap">Estado</th>{canEdit && <th className="p-4 text-center whitespace-nowrap">Acciones</th>}
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-white/5">
@@ -96,11 +96,11 @@ export default function Clientes({ currentUser }: ClientesProps) {
               : filtered.length === 0 ? <tr><td colSpan={7} className="p-8 text-center text-slate-500 text-xs">Sin clientes.</td></tr>
               : filtered.map(c => (
                 <tr key={c.id} className="hover:bg-slate-50/50 dark:hover:bg-white/[0.02] transition-colors">
-                  <td className="p-4 font-medium text-slate-800 dark:text-white">{c.nombre}</td>
-                  <td className="p-4 font-mono text-xs text-slate-500 dark:text-slate-400">{c.ruc || 'N/A'}</td>
-                  <td className="p-4 text-xs text-slate-600 dark:text-slate-400">{c.telefono || '-'}</td>
-                  <td className="p-4 text-xs text-slate-600 dark:text-slate-400">{c.email || '-'}</td>
-                  <td className="p-4 text-xs text-slate-600 dark:text-slate-400 max-w-[200px] truncate">{c.direccion || '-'}</td>
+                  <td className="p-4 font-medium text-slate-800 dark:text-white whitespace-nowrap">{c.nombre}</td>
+                  <td className="p-4 font-mono text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap">{c.ruc || 'N/A'}</td>
+                  <td className="p-4 text-xs text-slate-600 dark:text-slate-400 whitespace-nowrap">{c.telefono || '-'}</td>
+                  <td className="p-4 text-xs text-slate-600 dark:text-slate-400 whitespace-nowrap">{c.email || '-'}</td>
+                  <td className="p-4 text-xs text-slate-600 dark:text-slate-400 max-w-[200px] truncate whitespace-nowrap">{c.direccion || '-'}</td>
                   <td className="p-4 text-center"><span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${c.estado === 'Activo' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-slate-500/10 text-slate-400'}`}>{c.estado}</span></td>
                   {canEdit && <td className="p-4 text-center"><div className="flex items-center justify-center gap-1.5">
                     <button onClick={() => startEdit(c)} className="p-1.5 hover:bg-slate-100 dark:hover:bg-white/10 rounded-lg text-slate-400 hover:text-ivvi-teal transition-all cursor-pointer"><Edit2 size={14} /></button>
