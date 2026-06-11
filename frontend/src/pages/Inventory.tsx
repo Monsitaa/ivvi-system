@@ -108,7 +108,7 @@ export default function Inventory({ currentUser }: InventoryProps) {
   };
 
   return (
-    <div className="flex-1 p-4 sm:p-6 md:p-8 overflow-y-auto max-w-[1400px] mx-auto space-y-8 animate-fadeIn">
+    <div className="flex-1 w-full p-4 sm:p-6 md:p-8 overflow-y-auto max-w-[1400px] mx-auto space-y-8 animate-fadeIn">
       {/* Toast notifications */}
       {notification && (
         <div className={`fixed bottom-6 right-6 z-50 p-4 rounded-xl shadow-xl flex items-center gap-3 border text-sm max-w-md animate-slideIn ${

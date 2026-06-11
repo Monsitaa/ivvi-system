@@ -131,7 +131,7 @@ export default function Ventas({ currentUser }: VentasProps) {
   };
 
   return (
-    <div className="flex-1 p-4 sm:p-6 md:p-8 overflow-y-auto space-y-8 animate-fadeIn max-w-[1400px] mx-auto">
+    <div className="flex-1 w-full p-4 sm:p-6 md:p-8 overflow-y-auto space-y-8 animate-fadeIn max-w-[1400px] mx-auto">
       {notification && (
         <div className={`fixed bottom-6 right-6 z-50 p-4 rounded-xl shadow-xl flex items-center gap-3 border text-sm max-w-md animate-slideIn bg-slate-900 border-ivvi-teal/30 text-ivvi-teal-light`}>
           <AlertCircle size={20} />
